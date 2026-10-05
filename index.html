@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Podcast Pro - Multitrack</title>
+    <title>Studio Podcast - Multitrack</title>
     <style>
         :root {
             --bg-main: #121212;
@@ -79,16 +79,6 @@
             border-color: #c0392b;
         }
 
-        .time-display {
-            font-family: monospace;
-            font-size: 1.4em;
-            background: #000;
-            padding: 5px 15px;
-            border-radius: 4px;
-            color: var(--accent);
-            border: 1px solid #333;
-        }
-
         .vu-meter-box {
             display: flex;
             align-items: center;
@@ -97,6 +87,7 @@
             padding: 5px;
             border-radius: 4px;
             border: 1px solid #333;
+            position: relative;
         }
 
         #vu-meter {
@@ -104,6 +95,23 @@
             width: 100px;
             height: 15px;
             border-radius: 2px;
+        }
+
+        .clip-warning {
+            position: absolute;
+            top: -15px;
+            right: 0;
+            color: #e74c3c;
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .clip-warning.active {
+            opacity: 1;
+            transition: none;
         }
 
         .workspace {
@@ -424,14 +432,44 @@
             background: #333;
             color: white;
         }
+
+        .instructions-footer {
+            margin-top: 20px;
+            padding: 20px;
+            background: #1a1a1a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1em;
+            color: #ccc;
+            line-height: 2;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .instructions-footer strong {
+            color: var(--accent);
+            font-size: 1.3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .instructions-footer b {
+            color: #fff;
+            background: #333;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="header">
-        <h1>🎙️ Studio Podcast Pro</h1>
+        <h1>🎙️ Studio Podcast </h1>
         <div class="toolbar">
+            <button class="btn" id="btn-zoom-out" title="Dézoomer">🔍 -</button>
+            <button class="btn" id="btn-zoom-in" title="Zoomer">🔍 +</button>
             <div class="time-display" id="time-display">00:00.0</div>
             <button class="btn primary" id="btn-play">▶ Lecture</button>
             <button class="btn" id="btn-pause">⏸ Pause</button>
@@ -440,6 +478,7 @@
             <div class="vu-meter-box" title="Master Out">
                 <span style="font-size: 10px; color: #888;">MASTER</span>
                 <canvas id="vu-meter"></canvas>
+                <div class="clip-warning" id="clip-warning">⚠ SATURATION</div>
             </div>
             <button class="btn danger" id="btn-export">💾 Exporter WAV</button>
         </div>
@@ -461,11 +500,24 @@
         </div>
     </div>
 
+    <div class="instructions-footer">
+        <strong>💡 RAPPEL DES COMMANDES</strong>
+        <span>▶ <b>Espace</b> : Lecture / Pause</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span>✂️ <b>S</b> : Couper le clip</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span>🗑️ <b>Suppr / Retour</b> : Effacer</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span>↔️ <b>Flèches Gauche/Droite</b> : Avancer/Reculer</span><br>
+        <span>🖱️ <b>Glisser au centre</b> : Déplacer un son</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span>🖱️ <b>Glisser les bords</b> : Raccourcir (Trim)</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span>🔼 <b>Triangles jaunes</b> : Créer des fondus (Fades)</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span>↕️ <b>Ligne horizontale</b> : Volume du clip</span>
+    </div>
+
     <input type="file" id="file-input" accept="audio/*" style="display: none;">
 
     <script>
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx, masterGain, analyser;
+        let clipHoldTime = 0; // Timer pour maintenir l'alerte de saturation
 
         const state = {
             pixelsPerSecond: 50,
@@ -600,6 +652,9 @@
             const file = e.target.files[0];
             if (!file) return;
             DOM.fileInput.value = '';
+
+            // Reprendre le contexte si bloqué
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
 
             const arrayBuffer = await file.arrayBuffer();
             const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
@@ -762,15 +817,20 @@
             const cssWidth = clip.buffer.duration * state.pixelsPerSecond;
             const cssHeight = 100;
 
+            // On fixe la taille CSS exacte
+            canvas.style.width = `${cssWidth}px`;
+            canvas.style.height = `${cssHeight}px`;
+
             // Limite interne pour éviter les plantages sur les fichiers très longs
             const maxInternalWidth = 32000;
-            let internalWidth = cssWidth * dpr;
+            let internalWidth = Math.floor(cssWidth * dpr);
             if (internalWidth > maxInternalWidth) {
                 internalWidth = maxInternalWidth;
             }
 
+            // La vraie résolution de l'image (2x ou 3x plus grande sur Retina)
             canvas.width = internalWidth;
-            canvas.height = cssHeight * dpr;
+            canvas.height = Math.floor(cssHeight * dpr);
 
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -779,37 +839,32 @@
 
             // Le nombre d'échantillons par pixel interne
             const step = Math.max(1, Math.floor(data.length / internalWidth));
-            const amp = (cssHeight * dpr) / 2;
+            const amp = canvas.height / 2;
 
-            // Tracé vectoriel continu pour une netteté absolue
+            // Tracé "Pixel Perfect" (barres verticales) pour annuler le flou d'anti-aliasing
             ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.beginPath();
-            ctx.moveTo(0, amp);
 
-            // 1. Dessin de la crête supérieure (Top envelope)
             for (let i = 0; i < internalWidth; i++) {
-                let max = 0;
+                let min = 1.0;
+                let max = -1.0;
                 const offset = i * step;
                 const limit = Math.min(offset + step, data.length);
-                for (let j = offset; j < limit; j++) {
-                    if (data[j] > max) max = data[j];
-                }
-                ctx.lineTo(i, amp - (max * amp));
-            }
 
-            // 2. Dessin de la crête inférieure (Bottom envelope) en sens inverse
-            for (let i = internalWidth - 1; i >= 0; i--) {
-                let min = 0;
-                const offset = i * step;
-                const limit = Math.min(offset + step, data.length);
                 for (let j = offset; j < limit; j++) {
-                    if (data[j] < min) min = data[j];
+                    const datum = data[j];
+                    if (datum < min) min = datum;
+                    if (datum > max) max = datum;
                 }
-                ctx.lineTo(i, amp - (min * amp));
-            }
 
-            ctx.closePath();
-            ctx.fill();
+                if (min > max) { min = 0; max = 0; }
+
+                // Math.round force l'alignement sur la grille physique de l'écran (Netteté absolue)
+                const y = Math.round(amp - (max * amp));
+                const h = Math.max(1, Math.round((max - min) * amp));
+
+                // Dessin d'une barre verticale géométrique (sans lissage)
+                ctx.fillRect(i, y, 1, h);
+            }
         }
 
         function selectClip(id) {
@@ -932,16 +987,19 @@
             });
         }
 
+        function seek(timeInSeconds) {
+            const wasPlaying = state.isPlaying;
+            if (wasPlaying) pause();
+            state.pauseTime = Math.max(0, timeInSeconds);
+            updatePlayheadUI(state.pauseTime);
+            if (wasPlaying) play();
+        }
+
         DOM.ruler.addEventListener('mousedown', (e) => {
             const rect = DOM.tracksArea.getBoundingClientRect();
             const clickX = e.clientX - rect.left + document.getElementById('timeline-container').scrollLeft;
             const time = clickX / state.pixelsPerSecond;
-
-            const wasPlaying = state.isPlaying;
-            if (wasPlaying) pause();
-            state.pauseTime = Math.max(0, time);
-            updatePlayheadUI(state.pauseTime);
-            if (wasPlaying) play();
+            seek(time);
         });
 
         document.addEventListener('keydown', (e) => {
@@ -953,6 +1011,12 @@
                 splitSelected();
             } else if (e.code === 'Delete' || e.code === 'Backspace') {
                 deleteSelected();
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                seek(state.pauseTime - 0.1); // Avance de 0.1s (précision fine)
+            } else if (e.code === 'ArrowRight') {
+                e.preventDefault();
+                seek(state.pauseTime + 0.1); // Recule de 0.1s (précision fine)
             }
         });
 
@@ -1032,23 +1096,74 @@
 
         function startVUMeter() {
             const data = new Uint8Array(analyser.frequencyBinCount);
+            const warningEl = document.getElementById('clip-warning');
+
             function draw() {
                 requestAnimationFrame(draw);
                 analyser.getByteFrequencyData(data);
+
+                // Calcul du volume avec détection précise de crête
                 let sum = 0;
-                for (let i = 0; i < data.length; i++) sum += data[i];
-                const vol = Math.min(100, (sum / data.length / 128) * 100);
+                let maxPeak = 0;
+                for (let i = 0; i < data.length; i++) {
+                    sum += data[i];
+                    if (data[i] > maxPeak) maxPeak = data[i];
+                }
+
+                // Convertir la moyenne en pourcentage (pour l'affichage global)
+                const avgVol = Math.min(100, (sum / data.length / 128) * 100);
+
+                // Détection de la saturation (crête proche de la limite 255)
+                // 250 correspond à un signal très proche de 0dBFS
+                if (maxPeak > 250) {
+                    warningEl.classList.add('active');
+                    clipHoldTime = Date.now(); // Réinitialiser le timer
+                } else if (Date.now() - clipHoldTime > 1500) {
+                    // Cacher l'alerte après 1.5 secondes
+                    warningEl.classList.remove('active');
+                }
 
                 ctxVU.fillStyle = '#111';
                 ctxVU.fillRect(0, 0, DOM.canvasVU.width, DOM.canvasVU.height);
 
+                // Création du dégradé (Vert -> Jaune -> Rouge vif sur la fin)
                 const grad = ctxVU.createLinearGradient(0, 0, DOM.canvasVU.width, 0);
-                grad.addColorStop(0, '#4caf50'); grad.addColorStop(0.8, '#f1c40f'); grad.addColorStop(1, '#e74c3c');
+                grad.addColorStop(0, '#4caf50');    // Vert (sain)
+                grad.addColorStop(0.7, '#f1c40f');  // Jaune (attention)
+                grad.addColorStop(0.9, '#e74c3c');  // Rouge (limite)
+                grad.addColorStop(1, '#ff0000');    // Rouge pur (saturation)
+
                 ctxVU.fillStyle = grad;
-                ctxVU.fillRect(0, 0, (vol / 100) * DOM.canvasVU.width, DOM.canvasVU.height);
+
+                // Remplissage selon le volume
+                // Si ça sature (maxPeak élevé), on remplit jusqu'au bout pour bien montrer le rouge
+                let fillWidth = (avgVol / 100) * DOM.canvasVU.width;
+                if (maxPeak > 240) {
+                    fillWidth = Math.max(fillWidth, DOM.canvasVU.width * 0.95);
+                }
+
+                ctxVU.fillRect(0, 0, fillWidth, DOM.canvasVU.height);
             }
             draw();
         }
+
+        function setZoom(factor) {
+            let newZoom = state.pixelsPerSecond * factor;
+            newZoom = Math.max(10, Math.min(newZoom, 400)); // Limite du zoom
+            if (newZoom === state.pixelsPerSecond) return;
+            state.pixelsPerSecond = newZoom;
+
+            updatePlayheadUI(state.pauseTime);
+            state.clips.forEach(clip => {
+                updateClipVisuals(clip);
+                // Redessine l'onde pour qu'elle reste ultra-nette à n'importe quel zoom
+                drawWaveform(clip, clip.el.querySelector('.clip-waveform'));
+            });
+            updateWorkspaceWidth();
+        }
+
+        document.getElementById('btn-zoom-in').onclick = () => setZoom(1.3);
+        document.getElementById('btn-zoom-out').onclick = () => setZoom(1 / 1.3);
 
         document.getElementById('btn-play').onclick = play;
         document.getElementById('btn-pause').onclick = pause;
