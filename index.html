@@ -177,6 +177,23 @@
             color: var(--text-secondary);
         }
 
+        .t-play-btn.recording {
+            color: var(--accent);
+            animation: pulse-rec 1s infinite;
+        }
+
+        @keyframes pulse-rec {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
         .time-display {
             font-family: var(--font-tech);
             font-size: 18px;
@@ -416,6 +433,29 @@
         .t-btn.mute-active {
             background: var(--text-secondary);
             color: var(--bg-base);
+        }
+
+        .t-btn.arm-active {
+            background: var(--accent);
+            color: #FFFFFF;
+            border-color: var(--accent);
+        }
+
+        .recording-ghost {
+            position: absolute;
+            top: 5px;
+            background: rgba(229, 57, 53, 0.25);
+            border: 1px dashed var(--accent);
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 1px;
         }
 
         .vol-slider {
@@ -725,6 +765,119 @@
             opacity: 0;
             transition: opacity 0.1s;
         }
+
+        /**/
+        /* MODAL EXPORT & TOAST */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(2px);
+            z-index: 9000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--bg-base);
+            border: 1px solid var(--text-primary);
+            padding: 30px;
+            width: 420px;
+            max-width: 90vw;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-title {
+            font-family: var(--font-pixel);
+            font-size: 20px;
+            letter-spacing: 3px;
+            color: var(--text-primary);
+        }
+
+        .modal-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .modal-input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            background: var(--bg-surface);
+            padding: 0 12px;
+        }
+
+        .modal-input-wrapper:focus-within {
+            border-color: var(--text-primary);
+        }
+
+        .modal-input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: var(--font-tech);
+            font-size: 13px;
+            padding: 12px 0;
+            width: 100%;
+            outline: none;
+            letter-spacing: 1px;
+        }
+
+        .modal-ext {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            padding-left: 8px;
+            user-select: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 5px;
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-base);
+            border-color: var(--text-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #FFFFFF;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-primary);
+            color: var(--bg-base);
+            padding: 10px 24px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            z-index: 9500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .toast-msg.show {
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -735,6 +888,27 @@
         <p style="color: var(--text-secondary); margin-bottom: 40px; font-size: 12px;">INITIATING AUDIO ENGINE</p>
         <button class="start-btn" id="btn-start">OPEN</button>
     </div>
+
+    <!---->
+    <!-- EXPORT MODAL -->
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal-box">
+            <div class="modal-title">EXPORT MIX</div>
+            <p class="modal-desc">NOMMEZ VOTRE FICHIER AUDIO FINAL :</p>
+            <div class="modal-input-wrapper">
+                <input type="text" class="modal-input" id="export-filename" value="Montage_Podcast"
+                    placeholder="Nom_du_fichier" spellcheck="false" autocomplete="off">
+                <span class="modal-ext">.WAV</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-text" id="btn-export-cancel">ANNULER</button>
+                <button class="btn-text btn-primary" id="btn-export-confirm">TÉLÉCHARGER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION TOAST -->
+    <div class="toast-msg" id="toast-msg"></div>
 
     <!-- TOPBAR -->
     <div class="topbar">
@@ -761,6 +935,8 @@
         </div>
 
         <div class="transport-controls">
+            <button class="t-play-btn" id="btn-rec" title="RECORD (ARM A TRACK FIRST)"><i
+                    class="fa-solid fa-circle"></i></button>
             <button class="t-play-btn" id="btn-play" title="PLAY (SPACE)"><i class="fa-solid fa-play"></i></button>
             <button class="t-play-btn" id="btn-pause" title="PAUSE"><i class="fa-solid fa-pause"></i></button>
             <button class="t-play-btn" id="btn-stop" title="STOP"><i class="fa-solid fa-square"></i></button>
@@ -817,10 +993,16 @@
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx, masterGain, analyser;
         let clipHoldTime = 0;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recStream = null;
+        let recGhostEl = null;
 
         const state = {
             pixelsPerSecond: 80,
             isPlaying: false,
+            isRecording: false,
+            recStartTime: 0,
             playbackStartTime: 0,
             pauseTime: 0,
             selectedClipIds: [], // Tableau pour multi-selection
@@ -829,10 +1011,10 @@
             snapThreshold: 0.2, // seconds
             clips: [],
             tracks: [
-                { id: 't0', name: 'Voix 1', volume: 1, muted: false, solo: false, height: 120, gainNode: null },
-                { id: 't1', name: 'Voix 2', volume: 1, muted: false, solo: false, height: 120, gainNode: null },
-                { id: 't2', name: 'Habillage', volume: 0.7, muted: false, solo: false, height: 120, gainNode: null },
-                { id: 't3', name: 'Effets', volume: 0.7, muted: false, solo: false, height: 120, gainNode: null }
+                { id: 't0', name: 'Voix 1', volume: 1, muted: false, solo: false, armed: false, height: 120, gainNode: null },
+                { id: 't1', name: 'Voix 2', volume: 1, muted: false, solo: false, armed: false, height: 120, gainNode: null },
+                { id: 't2', name: 'Habillage', volume: 0.7, muted: false, solo: false, armed: false, height: 120, gainNode: null },
+                { id: 't3', name: 'Effets', volume: 0.7, muted: false, solo: false, armed: false, height: 120, gainNode: null }
             ]
         };
 
@@ -949,8 +1131,9 @@
                 header.innerHTML = `
                     <div class="track-title">${track.name}</div>
                     <div class="track-controls">
-                        <button class="t-btn btn-mute ${track.muted ? 'mute-active' : ''}">M</button>
-                        <button class="t-btn btn-solo ${track.solo ? 'active' : ''}">S</button>
+                        <button class="t-btn btn-mute ${track.muted ? 'mute-active' : ''}" title="MUTE">M</button>
+                        <button class="t-btn btn-solo ${track.solo ? 'active' : ''}" title="SOLO">S</button>
+                        <button class="t-btn btn-arm ${track.armed ? 'arm-active' : ''}" title="ARM FOR RECORDING">R</button>
                         <input type="range" class="vol-slider" min="0" max="1.5" step="0.01" value="${track.volume}">
                     </div>
                     <div class="btn-import"><i class="fa-solid fa-plus"></i> Importer</div>
@@ -960,6 +1143,14 @@
 
                 header.querySelector('.btn-mute').onclick = (e) => { track.muted = !track.muted; e.target.classList.toggle('mute-active'); updateMixerRouting(); };
                 header.querySelector('.btn-solo').onclick = (e) => { track.solo = !track.solo; e.target.classList.toggle('active'); updateMixerRouting(); };
+                header.querySelector('.btn-arm').onclick = () => {
+                    if (state.isRecording) return;
+                    const newState = !track.armed;
+                    state.tracks.forEach(t => t.armed = false);
+                    track.armed = newState;
+                    document.querySelectorAll('.btn-arm').forEach(b => b.classList.remove('arm-active'));
+                    if (track.armed) header.querySelector('.btn-arm').classList.add('arm-active');
+                };
                 header.querySelector('.vol-slider').oninput = (e) => { track.volume = parseFloat(e.target.value); updateMixerRouting(); };
                 header.querySelector('.btn-import').onclick = () => { initAudio(); targetTrackIdForImport = track.id; DOM.fileInput.click(); };
 
@@ -1006,7 +1197,7 @@
 
         document.getElementById('btn-add-track').onclick = () => {
             initAudio();
-            const newTrack = { id: 't' + Date.now(), name: `Piste ${state.tracks.length + 1}`, volume: 1, muted: false, solo: false, height: 120, gainNode: audioCtx.createGain() };
+            const newTrack = { id: 't' + Date.now(), name: `Piste ${state.tracks.length + 1}`, volume: 1, muted: false, solo: false, armed: false, height: 120, gainNode: audioCtx.createGain() };
             newTrack.gainNode.connect(masterGain);
             state.tracks.push(newTrack);
             renderTracksDOM();
@@ -1452,6 +1643,110 @@
             source.start(absStart, playOffset, playDuration);
         }
 
+        async function toggleRecord() {
+            initAudio();
+            if (state.isRecording) {
+                stop();
+                return;
+            }
+
+            let armedTrack = state.tracks.find(t => t.armed);
+            if (!armedTrack) {
+                // Si aucune piste n'est armée, on arme automatiquement la première piste
+                armedTrack = state.tracks[0];
+                armedTrack.armed = true;
+                const firstArmBtn = document.querySelector('.btn-arm');
+                if (firstArmBtn) firstArmBtn.classList.add('arm-active');
+            }
+
+            try {
+                recStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err) {
+                console.error("Accès au microphone refusé ou indisponible :", err);
+                return;
+            }
+
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(recStream);
+
+            const recTrackId = armedTrack.id;
+            const startRecTime = state.pauseTime;
+            state.recStartTime = startRecTime;
+            state.isRecording = true;
+
+            document.getElementById('btn-rec').classList.add('recording');
+
+            // Création du bloc visuel temporaire pendant l'enregistrement
+            const lane = DOM.tracksArea.querySelector(`.track-lane[data-track-id="${recTrackId}"]`);
+            if (lane) {
+                recGhostEl = document.createElement('div');
+                recGhostEl.className = 'recording-ghost';
+                recGhostEl.style.height = `${armedTrack.height - 20}px`;
+                recGhostEl.style.left = `${startRecTime * state.pixelsPerSecond}px`;
+                recGhostEl.style.width = `0px`;
+                recGhostEl.innerText = '● REC...';
+                lane.appendChild(recGhostEl);
+            }
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) {
+                    recordedChunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstop = async () => {
+                if (recGhostEl) {
+                    recGhostEl.remove();
+                    recGhostEl = null;
+                }
+                if (recStream) {
+                    recStream.getTracks().forEach(track => track.stop());
+                    recStream = null;
+                }
+
+                if (recordedChunks.length === 0) return;
+
+                const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                try {
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+                    const takeNumber = state.clips.filter(c => c.name.startsWith('REC_')).length + 1;
+                    const clip = {
+                        id: 'c_' + Date.now(),
+                        trackId: recTrackId,
+                        name: `REC_${takeNumber}.WAV`,
+                        buffer: audioBuffer,
+                        startTime: startRecTime,
+                        startOffset: 0,
+                        duration: audioBuffer.duration,
+                        fadeIn: 0, fadeOut: 0, gain: 1.0, autoFadeIn: 0, autoFadeOut: 0,
+                        sourceNode: null, fadeGainNode: null, clipGainNode: null, el: null
+                    };
+
+                    state.clips.push(clip);
+                    renderClipDOM(clip);
+                    updateCrossfades();
+                    updateWorkspaceWidth();
+                    saveState();
+                } catch (err) {
+                    console.error("Erreur lors du décodage de l'enregistrement :", err);
+                }
+            };
+
+            mediaRecorder.start(100);
+            play();
+        }
+
+        function stopRecordingInternal() {
+            if (!state.isRecording) return;
+            state.isRecording = false;
+            document.getElementById('btn-rec').classList.remove('recording');
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+        }
+
         function play() {
             initAudio();
             if (state.isPlaying) return;
@@ -1466,6 +1761,7 @@
         }
 
         function pause() {
+            if (state.isRecording) stopRecordingInternal();
             if (!state.isPlaying) return;
             state.isPlaying = false;
             state.pauseTime = audioCtx.currentTime - state.playbackStartTime;
@@ -1477,6 +1773,7 @@
         }
 
         function stop() {
+            if (state.isRecording) stopRecordingInternal();
             state.isPlaying = false;
             state.pauseTime = 0;
             stopAllNodes();
@@ -1623,6 +1920,11 @@
             state.pauseTime = audioCtx.currentTime - state.playbackStartTime;
             updatePlayheadUI(state.pauseTime);
 
+            if (state.isRecording && recGhostEl) {
+                const currentDur = Math.max(0, state.pauseTime - state.recStartTime);
+                recGhostEl.style.width = `${currentDur * state.pixelsPerSecond}px`;
+            }
+
             const px = state.pauseTime * state.pixelsPerSecond;
             if (px > DOM.timelineContainer.scrollLeft + DOM.timelineContainer.clientWidth - 50) {
                 DOM.timelineContainer.scrollLeft = px - DOM.timelineContainer.clientWidth + 100;
@@ -1716,13 +2018,64 @@
 
         document.getElementById('btn-zoom-in').onclick = () => setZoom(1.3);
         document.getElementById('btn-zoom-out').onclick = () => setZoom(1 / 1.3);
+        document.getElementById('btn-rec').onclick = toggleRecord;
         document.getElementById('btn-play').onclick = play;
         document.getElementById('btn-pause').onclick = pause;
         document.getElementById('btn-stop').onclick = stop;
 
-        document.getElementById('btn-export').addEventListener('click', async () => {
-            if (state.clips.length === 0) { alert("Le montage est vide !"); return; }
+        /**/
+        function showToast(msg) {
+            const toast = document.getElementById('toast-msg');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        const exportModal = document.getElementById('export-modal');
+        const exportFilenameInput = document.getElementById('export-filename');
+        const btnExportCancel = document.getElementById('btn-export-cancel');
+        const btnExportConfirm = document.getElementById('btn-export-confirm');
+
+        document.getElementById('btn-export').addEventListener('click', () => {
+            if (state.clips.length === 0) {
+                showToast("LE MONTAGE EST VIDE !");
+                return;
+            }
             if (state.isPlaying) stop();
+
+            exportModal.classList.add('active');
+            setTimeout(() => {
+                exportFilenameInput.focus();
+                exportFilenameInput.select();
+            }, 50);
+        });
+
+        function closeExportModal() {
+            exportModal.classList.remove('active');
+        }
+
+        btnExportCancel.addEventListener('click', closeExportModal);
+
+        exportModal.addEventListener('mousedown', (e) => {
+            if (e.target === exportModal) closeExportModal();
+        });
+
+        exportFilenameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnExportConfirm.click();
+            } else if (e.key === 'Escape') {
+                closeExportModal();
+            }
+        });
+
+        btnExportConfirm.addEventListener('click', async () => {
+            let rawName = exportFilenameInput.value.trim();
+            if (!rawName) rawName = 'Montage_Podcast';
+            rawName = rawName.replace(/\.wav$/i, '');
+            const finalFileName = `${rawName}.wav`;
+
+            closeExportModal();
 
             const btn = document.getElementById('btn-export');
             btn.innerHTML = "EXPORTING...";
@@ -1760,9 +2113,12 @@
                 const wavBlob = bufferToWave(renderedBuffer, renderedBuffer.length);
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(wavBlob);
-                a.download = 'Montage_Podcast.wav';
+                a.download = finalFileName;
                 a.click();
-            } catch (e) { alert("Erreur d'exportation."); }
+                showToast("EXPORT TERMINÉ !");
+            } catch (e) {
+                showToast("ERREUR LORS DE L'EXPORTATION.");
+            }
 
             btn.innerHTML = 'EXPORT MIX';
             btn.disabled = false;
