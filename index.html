@@ -25,7 +25,8 @@
             --accent: #E53935;
             --accent-active: #000000;
             --selection-bg: rgba(0, 0, 0, 0.05);
-            --track-active-bg: rgba(0, 0, 0, 0.03);
+            --track-active-bg: rgba(0, 0, 0, 0.05);
+            --track-active-border: #1A1A1A;
             --font-pixel: 'DotGothic16', sans-serif;
             --font-tech: 'JetBrains Mono', monospace;
         }
@@ -43,8 +44,9 @@
             --clip-waveform: #EEEEEE;
             --accent: #FF4444;
             --accent-active: #FFFFFF;
-            --selection-bg: rgba(255, 255, 255, 0.05);
-            --track-active-bg: rgba(255, 255, 255, 0.03);
+            --selection-bg: rgba(255, 68, 68, 0.15);
+            --track-active-bg: rgba(255, 255, 255, 0.05);
+            --track-active-border: #FF4444;
         }
 
         * {
@@ -87,6 +89,7 @@
             flex-shrink: 0;
             flex-wrap: wrap;
             gap: 15px;
+            z-index: 100;
         }
 
         .topbar-group {
@@ -106,6 +109,7 @@
         .logo-icon {
             font-family: var(--font-pixel);
             font-size: 24px;
+            color: var(--accent);
         }
 
         .icon-btn {
@@ -164,6 +168,7 @@
             color: var(--bg-base);
         }
 
+        /* Mode Coupe (Ciseaux) */
         .tool-cut .tracks-area,
         .tool-cut .track-lane,
         .tool-cut .audio-clip,
@@ -277,8 +282,10 @@
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            z-index: 20;
+            z-index: 60;
             flex-shrink: 0;
+            position: sticky;
+            left: 0;
         }
 
         .timeline-container {
@@ -287,6 +294,13 @@
             position: relative;
             background: var(--bg-base);
             min-width: 0;
+        }
+
+        /* Le NOUVEAU wrapper qui force la largeur de toute la timeline */
+        .timeline-wrapper {
+            position: relative;
+            min-width: 100%;
+            height: 100%;
         }
 
         /* VU METER SIDEBAR */
@@ -342,7 +356,7 @@
             color: var(--text-secondary);
             position: sticky;
             top: 0;
-            z-index: 25;
+            z-index: 65;
         }
 
         .time-ruler {
@@ -351,13 +365,27 @@
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
-            z-index: 10;
-            cursor: ew-resize;
+            z-index: 40;
+            cursor: text;
+            overflow: hidden;
+            width: 100%;
+            /* S'adapte au timeline-wrapper */
+        }
+
+        .ruler-mark {
+            position: absolute;
+            bottom: 0;
+            height: 10px;
+            border-left: 1px solid var(--text-secondary);
+            padding-left: 4px;
+            font-size: 10px;
+            color: var(--text-secondary);
+            pointer-events: none;
         }
 
         .tracks-area {
             position: relative;
-            min-width: 100%;
+            width: 100%;
             min-height: calc(100% - 30px);
         }
 
@@ -370,11 +398,12 @@
             justify-content: center;
             transition: background-color 0.2s, border-left 0.2s;
             border-left: 4px solid transparent;
+            cursor: pointer;
         }
 
         .track-header.selected {
             background: var(--track-active-bg);
-            border-left: 4px solid var(--accent);
+            border-left: 4px solid var(--track-active-border);
         }
 
         .track-resizer {
@@ -398,7 +427,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            cursor: pointer;
+            pointer-events: none;
         }
 
         .track-controls {
@@ -481,6 +510,7 @@
             position: relative;
             background: transparent;
             transition: background-color 0.2s;
+            width: 100%;
         }
 
         .track-lane.selected {
@@ -660,7 +690,7 @@
         .live-rec-clip {
             position: absolute;
             top: 4px;
-            background: rgba(255, 68, 68, 0.2);
+            background: rgba(255, 68, 68, 0.15);
             border: 1px solid var(--accent);
             z-index: 5;
             pointer-events: none;
@@ -680,34 +710,25 @@
         /* PLAYHEAD (ATTRACTABLE ANYWHERE) */
         .playhead {
             position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 15px;
-            transform: translateX(-7px);
-            cursor: ew-resize;
-            z-index: 20;
-            display: flex;
-            justify-content: center;
-            pointer-events: auto;
-        }
-
-        .playhead::before {
-            content: '';
-            position: absolute;
-            top: 0;
+            top: -30px;
             bottom: 0;
             width: 1px;
             background: var(--accent);
+            z-index: 50;
+            pointer-events: none;
         }
 
-        .playhead::after {
-            content: '';
+        .playhead-handle {
             position: absolute;
             top: 0;
-            width: 7px;
-            height: 7px;
+            left: -7px;
+            width: 15px;
+            height: 15px;
             background: var(--accent);
-            transform: translateX(0px);
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            cursor: ew-resize;
+            pointer-events: auto;
+            z-index: 51;
         }
 
         .snap-indicator {
@@ -726,12 +747,13 @@
         #selection-box {
             position: absolute;
             border: 1px dashed var(--accent);
-            background: rgba(255, 68, 68, 0.2);
+            background: var(--selection-bg);
             z-index: 999;
             pointer-events: none;
             display: none;
         }
 
+        /* FOOTER SHORTCUTS */
         .instructions-footer {
             padding: 10px 20px;
             background: var(--bg-base);
@@ -744,6 +766,7 @@
             flex-shrink: 0;
             flex-wrap: wrap;
             gap: 10px;
+            z-index: 100;
         }
 
         .inst-group {
@@ -778,7 +801,7 @@
             padding: 30px;
             width: 90%;
             max-width: 600px;
-            max-height: 92vh;
+            max-height: 92dvh;
             overflow-y: auto;
             position: relative;
         }
@@ -925,39 +948,36 @@
                 <div class="onboarding-slide active">
                     <div class="slide-icon"><i class="fa-solid fa-microphone-lines"></i></div>
                     <div class="slide-title">1. ENREGISTREMENT</div>
-                    <div class="slide-text">Cliquez sur le bouton <strong>R</strong> d'une piste pour l'armer (le
-                        préparer).<br>Ensuite, cliquez sur le gros bouton rond <strong>REC</strong> en haut pour
-                        enregistrer votre voix.</div>
+                    <div class="slide-text">Cliquez sur le bouton <strong>R</strong> d'une piste pour
+                        l'armer.<br>Ensuite, cliquez sur le gros bouton <strong>REC</strong> en haut pour enregistrer
+                        votre voix.</div>
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon"><i class="fa-solid fa-file-import"></i></div>
                     <div class="slide-title">2. IMPORTER DES SONS</div>
                     <div class="slide-text">Vous avez déjà des fichiers (musique, bruitages) ?<br>Cliquez sur <strong>+
-                            IMPORTER</strong> sous le nom d'une piste pour ajouter un fichier .mp3 ou .wav.</div>
+                            IMPORTER</strong> sous le nom d'une piste.</div>
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon"><i class="fa-solid fa-hand"></i></div>
-                    <div class="slide-title">3. DÉPLACER & SÉLECTIONNER</div>
-                    <div class="slide-text">Attrapez n'importe quel bloc audio (clip) avec la souris pour le glisser
-                        dans le temps ou sur une autre piste.<br><br><em>Astuce : Maintenez <strong>SHIFT (MAJ)</strong>
-                            et cliquez sur plusieurs clips pour les déplacer ensemble, ou utilisez le Lasso avec la
-                            souris !</em></div>
+                    <div class="slide-title">3. SÉLECTIONNER & DÉPLACER</div>
+                    <div class="slide-text">Choisissez l'outil <strong>SÉLECTION (V)</strong> en haut.<br>Attrapez
+                        n'importe quel clip pour le glisser dans le temps.<br><br><em>Astuce : Tracez un rectangle dans
+                            le vide avec la souris pour sélectionner plusieurs clips d'un coup (Lasso) !</em></div>
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon"><i class="fa-solid fa-scissors"></i></div>
                     <div class="slide-title">4. LE MONTAGE (COUPER)</div>
-                    <div class="slide-text">Choisissez l'outil <strong>CISEAUX (C)</strong> en haut, puis cliquez
-                        n'importe où sur un son pour le couper instantanément.<br><br><em>Astuce: Vous pouvez aussi
-                            utiliser la touche <strong>S</strong> pour couper la piste sélectionnée au niveau de la
-                            ligne rouge.</em></div>
+                    <div class="slide-text">Choisissez l'outil <strong>CISEAUX (C)</strong> en haut, puis cliquez sur un
+                        son pour le couper instantanément.<br><br><em>Astuce: Vous pouvez aussi utiliser la touche
+                            <strong>S</strong> pour couper la piste sélectionnée au niveau de la ligne rouge.</em></div>
                 </div>
                 <div class="onboarding-slide">
-                    <div class="slide-icon"><i class="fa-solid fa-sliders"></i></div>
-                    <div class="slide-title">5. LE MIXAGE</div>
-                    <div class="slide-text">Attrapez les <strong>bords d'un clip</strong> pour le
-                        raccourcir.<br>Attrapez les <strong>coins supérieurs</strong> pour créer des fondus
-                        (Fades).<br>Superposez deux clips pour créer un <strong>mixage automatique (Croosfade
-                            rouge)</strong>.</div>
+                    <div class="slide-icon"><i class="fa-solid fa-trash-can"></i></div>
+                    <div class="slide-title">5. SUPPRESSION MAGIQUE</div>
+                    <div class="slide-text">Sélectionnez un clip raté et appuyez sur <strong>D</strong> pour
+                        l'effacer.<br>Encore plus fort : appuyez sur <strong>MAJ + D</strong> ! Cela effacera le son et
+                        reculera automatiquement tout le reste pour <strong>boucher le trou</strong>.</div>
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon" style="color: var(--accent);"><i
@@ -1045,7 +1065,7 @@
         </div>
     </div>
 
-    <!-- MAIN -->
+    <!-- MAIN WORKSPACE -->
     <div class="main-content">
         <div class="editor" id="workspace">
             <div class="track-headers-container" id="headers-container">
@@ -1056,11 +1076,16 @@
             </div>
 
             <div class="timeline-container" id="timeline-container">
-                <div class="time-ruler" id="ruler"></div>
-                <div class="tracks-area" id="tracks-area">
-                    <div id="selection-box"></div>
-                    <div class="playhead" id="playhead"></div>
-                    <div class="snap-indicator" id="snap-indicator"></div>
+                <!-- LE WRAPPER QUI FORCE LA LARGEUR -->
+                <div class="timeline-wrapper" id="timeline-wrapper">
+                    <div class="time-ruler" id="ruler"></div>
+                    <div class="tracks-area" id="tracks-area">
+                        <div id="selection-box"></div>
+                        <div class="playhead" id="playhead">
+                            <div class="playhead-handle" id="playhead-handle" title="Tête de lecture"></div>
+                        </div>
+                        <div class="snap-indicator" id="snap-indicator"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1074,16 +1099,17 @@
         </div>
     </div>
 
+    <!-- INSTRUCTIONS FOOTER -->
     <div class="instructions-footer">
         <div class="inst-group">
             <div><kbd>V</kbd> SELECT</div>
             <div><kbd>C</kbd> CISEAUX</div>
-            <div><kbd>ESPACE</kbd> PLAY/STOP</div>
-            <div><kbd>S</kbd> COUPER</div>
-            <div><kbd>D</kbd> EFFACER</div>
-            <div><kbd>SHIFT+D</kbd> SUPPR. MAGIQUE</div>
+            <div><kbd>ESPACE</kbd> LECTURE</div>
+            <div><kbd>S</kbd> COUPER PISTE</div>
+            <div><kbd>MAJ+S</kbd> COUPER TOUT</div>
+            <div><kbd>D</kbd> SUPPRIMER</div>
+            <div><kbd>MAJ+D</kbd> SUPPR. MAGIQUE</div>
             <div><kbd>CTRL+C/V</kbd> COPIER/COLLER</div>
-            <div><kbd>SHIFT+CLIC</kbd> MULTI-SELECT</div>
         </div>
         <div style="color: var(--accent); font-weight: 700;">⚠️ EXPORTER (.WAV) AVANT DE FERMER</div>
     </div>
@@ -1091,7 +1117,6 @@
     <input type="file" id="file-input" accept="audio/*" style="display: none;">
 
     <script>
-        /* --- CORE STATE --- */
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx, masterGain, analyser;
         let currentSlide = 0;
@@ -1105,7 +1130,7 @@
             tracks: [
                 { id: 't0', name: 'Voix 1', volume: 1, muted: false, solo: false, height: 120, gainNode: null },
                 { id: 't1', name: 'Voix 2', volume: 1, muted: false, solo: false, height: 120, gainNode: null },
-                { id: 't2', name: 'Habillage', volume: 0.7, muted: false, solo: false, height: 120, gainNode: null },
+                { id: 't2', name: 'Ambiance', volume: 0.7, muted: false, solo: false, height: 120, gainNode: null },
                 { id: 't3', name: 'Effets', volume: 0.7, muted: false, solo: false, height: 120, gainNode: null }
             ]
         };
@@ -1114,9 +1139,11 @@
         const DOM = {
             headers: document.getElementById('track-headers'), tracksArea: document.getElementById('tracks-area'),
             ruler: document.getElementById('ruler'), playhead: document.getElementById('playhead'),
+            playheadHandle: document.getElementById('playhead-handle'),
             snapInd: document.getElementById('snap-indicator'), timeDisplay: document.getElementById('time-display'), fileInput: document.getElementById('file-input'),
             canvasVU: document.getElementById('vu-meter'), btnUndo: document.getElementById('btn-undo'), btnRedo: document.getElementById('btn-redo'),
-            timelineContainer: document.getElementById('timeline-container'), btnPlay: document.getElementById('btn-play'), btnPause: document.getElementById('btn-pause'), btnStop: document.getElementById('btn-stop'),
+            timelineContainer: document.getElementById('timeline-container'), timelineWrapper: document.getElementById('timeline-wrapper'),
+            btnPlay: document.getElementById('btn-play'), btnPause: document.getElementById('btn-pause'), btnStop: document.getElementById('btn-stop'),
             selectionBox: document.getElementById('selection-box')
         };
         const ctxVU = DOM.canvasVU.getContext('2d');
@@ -1158,48 +1185,38 @@
         function closeOnboarding() { document.getElementById('onboarding-modal').style.display = 'none'; initAudio(); state.studioOpened = true; }
         function openOnboarding() { document.getElementById('onboarding-modal').style.display = 'flex'; goToSlide(0); }
 
-        function getSnapTime(time, ignoreClipIds) {
-            let snapPoints = [state.pauseTime];
-            state.clips.forEach(c => {
-                if (!ignoreClipIds.includes(c.id)) {
-                    snapPoints.push(c.startTime);
-                    snapPoints.push(c.startTime + c.duration);
+        async function decodeAudioSafe(arrayBuffer) {
+            return new Promise((resolve, reject) => {
+                try {
+                    audioCtx.decodeAudioData(arrayBuffer, resolve, reject);
+                } catch (e) {
+                    reject(e);
                 }
             });
-
-            let closest = time;
-            let minDiff = state.snapThreshold;
-
-            snapPoints.forEach(p => {
-                if (Math.abs(time - p) < minDiff) {
-                    minDiff = Math.abs(time - p);
-                    closest = p;
-                }
-            });
-
-            if (closest !== time) {
-                DOM.snapInd.style.opacity = 1;
-                DOM.snapInd.style.left = `${closest * state.pixelsPerSecond}px`;
-            } else {
-                DOM.snapInd.style.opacity = 0;
-            }
-            return closest;
         }
 
-        DOM.btnPlay.onclick = play;
-        DOM.btnPause.onclick = pause;
-        DOM.btnStop.onclick = stop;
-
-        /* --- STREAMING_CHUNK:Configuring Audio and Mixers... --- */
         function initAudio() {
             if (!audioCtx) {
-                audioCtx = new AudioContext();
-                masterGain = audioCtx.createGain(); analyser = audioCtx.createAnalyser(); analyser.fftSize = 256;
-                masterGain.connect(analyser); analyser.connect(audioCtx.destination);
-                state.tracks.forEach(t => { t.gainNode = audioCtx.createGain(); t.gainNode.gain.value = t.volume; t.gainNode.connect(masterGain); });
-                startVUMeter(); saveState(); renderTracksDOM();
+                try {
+                    audioCtx = new AudioContext();
+                    masterGain = audioCtx.createGain(); analyser = audioCtx.createAnalyser(); analyser.fftSize = 256;
+                    masterGain.connect(analyser); analyser.connect(audioCtx.destination);
+                    state.tracks.forEach(t => { t.gainNode = audioCtx.createGain(); t.gainNode.gain.value = t.volume; t.gainNode.connect(masterGain); });
+                    startVUMeter();
+
+                    // On force l'état initial dans l'historique
+                    history.past = [];
+                    history.future = [];
+                    saveState();
+
+                    renderTracksDOM(); updateWorkspaceWidth();
+                } catch (e) {
+                    alert("⚠️ Impossible d'initialiser le moteur audio.\nSi vous utilisez Brave, désactivez les Boucliers (Shields) agressifs.");
+                }
             }
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume().catch(e => console.warn("AudioContext resume blocked:", e));
+            }
         }
 
         function updateMixerRouting() {
@@ -1211,7 +1228,21 @@
             });
         }
 
-        /* --- TOOLS & HISTORY --- */
+        function getSnapTime(time, ignoreClipIds) {
+            let snapPoints = [state.pauseTime];
+            state.clips.forEach(c => {
+                if (!ignoreClipIds.includes(c.id)) {
+                    snapPoints.push(c.startTime);
+                    snapPoints.push(c.startTime + c.duration);
+                }
+            });
+            let closest = time; let minDiff = state.snapThreshold;
+            snapPoints.forEach(p => { if (Math.abs(time - p) < minDiff) { minDiff = Math.abs(time - p); closest = p; } });
+            if (closest !== time) { DOM.snapInd.style.opacity = 1; DOM.snapInd.style.left = `${closest * state.pixelsPerSecond}px`; }
+            else { DOM.snapInd.style.opacity = 0; }
+            return closest;
+        }
+
         function setTool(tool) {
             state.activeTool = tool;
             document.getElementById('tool-select').classList.toggle('active', tool === 'select');
@@ -1247,6 +1278,8 @@
             updateHistoryUI();
         }
 
+        DOM.btnUndo.onclick = undo; DOM.btnRedo.onclick = redo;
+
         function updateHistoryUI() { DOM.btnUndo.disabled = history.past.length <= 1; DOM.btnRedo.disabled = history.future.length === 0; }
 
         function restoreState(savedClips) {
@@ -1258,7 +1291,21 @@
             if (wasPlaying) play();
         }
 
-        /* --- STREAMING_CHUNK:Rendering DOM Tracks... --- */
+        function drawRuler(currentWidth) {
+            DOM.ruler.innerHTML = '';
+            const durationInSeconds = currentWidth / state.pixelsPerSecond;
+
+            const step = state.pixelsPerSecond > 80 ? 1 : (state.pixelsPerSecond > 30 ? 5 : 10);
+
+            for (let i = 0; i <= durationInSeconds; i += step) {
+                const mark = document.createElement('div');
+                mark.className = 'ruler-mark';
+                mark.style.left = `${i * state.pixelsPerSecond}px`;
+                mark.innerText = i + 's';
+                DOM.ruler.appendChild(mark);
+            }
+        }
+
         function selectTrack(trackId) {
             state.selectedTrackId = trackId;
             document.querySelectorAll('.track-header').forEach(el => el.classList.toggle('selected', el.dataset.trackId === trackId));
@@ -1269,6 +1316,7 @@
             DOM.headers.innerHTML = ''; document.querySelectorAll('.track-lane').forEach(el => el.remove());
             state.tracks.forEach((track) => {
                 const header = document.createElement('div'); header.className = 'track-header'; header.dataset.trackId = track.id; header.style.height = `${track.height}px`;
+                if (state.selectedTrackId === track.id) header.classList.add('selected');
                 header.innerHTML = `
                     <div class="track-title">${track.name}</div>
                     <div class="track-controls">
@@ -1291,7 +1339,7 @@
                 header.addEventListener('mousedown', () => selectTrack(track.id));
 
                 const lane = document.createElement('div'); lane.className = 'track-lane'; lane.dataset.trackId = track.id; lane.style.height = `${track.height}px`;
-                lane.addEventListener('mousedown', (e) => { if (e.target === lane) { selectTrack(track.id); selectClip(null, false); } });
+                if (state.selectedTrackId === track.id) lane.classList.add('selected');
                 DOM.tracksArea.appendChild(lane);
 
                 let isResizing = false; let startY = 0; let startHeight = 0;
@@ -1313,11 +1361,16 @@
             newTrack.gainNode.connect(masterGain); state.tracks.push(newTrack); renderTracksDOM();
         };
 
-        /* --- STREAMING_CHUNK:Handling Import and Rec... --- */
         DOM.fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0]; if (!file) return; DOM.fileInput.value = '';
-            const arrayBuffer = await file.arrayBuffer(); const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-            createClip(targetTrackIdForImport, file.name.toUpperCase(), audioBuffer, state.pauseTime);
+            initAudio();
+            const arrayBuffer = await file.arrayBuffer();
+            try {
+                const audioBuffer = await decodeAudioSafe(arrayBuffer);
+                createClip(targetTrackIdForImport, file.name.toUpperCase(), audioBuffer, state.pauseTime);
+            } catch (err) {
+                alert("Erreur de lecture du fichier audio. Format non supporté.");
+            }
         });
 
         function createClip(trackId, name, buffer, startTime) {
@@ -1336,17 +1389,24 @@
             if (state.isRecording) { stopRecording(); return; }
             if (state.isPlaying) pause();
 
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("⚠️ Votre navigateur bloque l'accès au micro.\n\nSur BRAVE : Assurez-vous que le site n'est pas bloqué par les Boucliers (Shields).");
+                return;
+            }
+
             if (!state.armedTrackId) { state.armedTrackId = state.selectedTrackId || state.tracks[0].id; renderTracksDOM(); }
 
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 state.mediaRecorder = new MediaRecorder(stream); state.recordedChunks = [];
                 state.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) state.recordedChunks.push(e.data); };
                 state.mediaRecorder.onstop = async () => {
                     const blob = new Blob(state.recordedChunks, { type: 'audio/webm' });
                     const arrayBuffer = await blob.arrayBuffer();
-                    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-                    createClip(state.armedTrackId, `REC_${state.recCount++}.WAV`, audioBuffer, state.recordingStartTime);
+                    try {
+                        const audioBuffer = await decodeAudioSafe(arrayBuffer);
+                        createClip(state.armedTrackId, `REC_${state.recCount++}.WAV`, audioBuffer, state.recordingStartTime);
+                    } catch (e) { console.error("Decode rec error", e); }
                     stream.getTracks().forEach(t => t.stop());
                 };
 
@@ -1379,7 +1439,12 @@
                 lane.appendChild(liveEl);
 
                 play();
-            } catch (err) { alert("Accès au microphone refusé."); }
+            } catch (err) {
+                alert("⚠️ Accès au micro refusé ou aucun micro détecté.\n\nSur BRAVE : Désactivez les 'Boucliers' (Shields) en haut à droite (icône lion) pour ce site. Vérifiez que le micro est autorisé dans les paramètres du site.");
+                console.error(err);
+                document.getElementById('btn-rec').classList.remove('rec-active');
+                state.isRecording = false;
+            }
         };
 
         function stopRecording() {
@@ -1395,7 +1460,6 @@
             if (state.isPlaying) pause();
         }
 
-        /* --- STREAMING_CHUNK:Defining Clips Interactivity... --- */
         function selectClip(id, multi = false) {
             if (!id) { state.selectedClipIds = []; }
             else if (multi) {
@@ -1434,11 +1498,11 @@
             let action = null; let startX = 0, startY = 0; let initialStates = []; let hasMoved = false;
 
             const onMouseDown = (e, act) => {
-                e.stopPropagation();
+                e.stopPropagation(); initAudio();
 
                 if (state.activeTool === 'cut') {
                     const rect = DOM.tracksArea.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left + DOM.timelineContainer.scrollLeft;
+                    const clickX = e.clientX - rect.left;
                     const cutTime = clickX / state.pixelsPerSecond;
                     splitClipAtTime(clip, cutTime);
                     return;
@@ -1531,7 +1595,6 @@
             document.addEventListener('mousemove', onMouseMove); document.addEventListener('mouseup', onMouseUp);
         }
 
-        /* --- STREAMING_CHUNK:Waveforms and Visuals... --- */
         function drawWaveform(clip, canvas, trackHeight) {
             const dpr = window.devicePixelRatio || 1; const cssWidth = clip.buffer.duration * state.pixelsPerSecond; const cssHeight = trackHeight - 8;
             canvas.style.width = `${cssWidth}px`; canvas.style.height = `${cssHeight}px`;
@@ -1588,7 +1651,6 @@
             state.clips.forEach(c => updateClipVisuals(c));
         }
 
-        /* --- STREAMING_CHUNK:Audio Playback Scheduling... --- */
         function scheduleClipPlayback(clip, ctx) {
             const source = ctx.createBufferSource(); source.buffer = clip.buffer;
             const fadeGain = ctx.createGain(); const clipGain = ctx.createGain(); clipGain.gain.value = clip.gain;
@@ -1622,18 +1684,21 @@
             source.start(absStart, playOffset, playDuration);
         }
 
+        DOM.btnPlay.onclick = play;
         function play() {
             initAudio(); if (state.isPlaying) return; state.isPlaying = true; state.playbackStartTime = audioCtx.currentTime - state.pauseTime;
             state.clips.forEach(clip => scheduleClipPlayback(clip, audioCtx));
             document.getElementById('btn-play').classList.add('playing'); document.getElementById('btn-pause').classList.remove('playing'); animationLoop();
         }
 
+        DOM.btnPause.onclick = pause;
         function pause() {
             if (!state.isPlaying) return; state.isPlaying = false; state.pauseTime = audioCtx.currentTime - state.playbackStartTime;
             stopAllNodes(); cancelAnimationFrame(state.animationId);
             document.getElementById('btn-play').classList.remove('playing'); document.getElementById('btn-pause').classList.add('playing');
         }
 
+        DOM.btnStop.onclick = stop;
         function stop() {
             if (state.isRecording) stopRecording();
             state.isPlaying = false; state.pauseTime = 0; stopAllNodes(); cancelAnimationFrame(state.animationId); updatePlayheadUI(0);
@@ -1641,17 +1706,29 @@
         }
 
         function stopAllNodes() { state.clips.forEach(clip => { if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } clip.sourceNode.disconnect(); } if (clip.fadeGainNode) clip.fadeGainNode.disconnect(); if (clip.clipGainNode) clip.clipGainNode.disconnect(); clip.sourceNode = null; clip.fadeGainNode = null; clip.clipGainNode = null; }); }
+
         function seek(time) { initAudio(); const wasPlaying = state.isPlaying; if (wasPlaying) pause(); state.pauseTime = Math.max(0, time); updatePlayheadUI(state.pauseTime); if (wasPlaying) play(); }
 
-        /* --- STREAMING_CHUNK:Scrubbing and Keybinds... --- */
         let isScrubbing = false; let wasPlayingBeforeScrub = false;
         function scrub(e) {
-            const rect = DOM.tracksArea.getBoundingClientRect(); let clickX = e.clientX - rect.left + DOM.timelineContainer.scrollLeft;
+            const rect = DOM.tracksArea.getBoundingClientRect();
+            let clickX = e.clientX - rect.left;
             state.pauseTime = Math.max(0, clickX / state.pixelsPerSecond); updatePlayheadUI(state.pauseTime);
         }
         function startSeek(e) { initAudio(); isScrubbing = true; wasPlayingBeforeScrub = state.isPlaying; if (state.isPlaying) pause(); scrub(e); }
 
-        DOM.ruler.onmousedown = startSeek; DOM.playhead.onmousedown = startSeek;
+        DOM.ruler.onmousedown = startSeek;
+        DOM.playheadHandle.onmousedown = startSeek;
+
+        // Permettre le clic n'importe où sur tracksArea pour déplacer le curseur si on est en mode sélection et qu'on n'a pas dragué le lasso
+        DOM.tracksArea.addEventListener('mouseup', (e) => {
+            if (state.activeTool === 'select' && !lassoHasDragged && !e.target.closest('.audio-clip') && !e.target.closest('.playhead-handle') && !e.target.closest('.time-ruler')) {
+                const rect = DOM.tracksArea.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                seek(Math.max(0, clickX / state.pixelsPerSecond));
+            }
+        });
+
         document.addEventListener('mousemove', (e) => { if (isScrubbing) scrub(e); });
         document.addEventListener('mouseup', () => { if (isScrubbing) { isScrubbing = false; if (wasPlayingBeforeScrub) play(); } });
 
@@ -1663,7 +1740,7 @@
             else if (e.code === 'KeyC' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); setTool('cut'); }
             else if (e.code === 'KeyV' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); setTool('select'); }
             else if (e.code === 'Delete' || e.code === 'Backspace') { e.preventDefault(); deleteSelected(); }
-            else if (e.code === 'KeyD') { e.preventDefault(); if (e.shiftKey) rippleDeleteSelected(); else deleteSelected(); }
+            else if (e.code === 'KeyD' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); if (e.shiftKey) rippleDeleteSelected(); else deleteSelected(); }
             else if (e.code === 'KeyC' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); copySelected(); }
             else if (e.code === 'KeyV' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); pasteClips(); }
             else if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); undo(); }
@@ -1672,7 +1749,6 @@
             else if (e.code === 'ArrowRight') { e.preventDefault(); seek(state.pauseTime + 0.1); }
         });
 
-        /* --- STREAMING_CHUNK:Splitting and Editing Tools... --- */
         function splitClipAtTime(orig, cutTime) {
             if (cutTime <= orig.startTime + 0.05 || cutTime >= orig.startTime + orig.duration - 0.05) return;
             const wasPlaying = state.isPlaying; if (wasPlaying) pause();
@@ -1696,12 +1772,14 @@
 
         function deleteSelected() {
             if (!state.selectedClipIds.length) return;
+            const wasPlaying = state.isPlaying; if (wasPlaying) pause();
             state.selectedClipIds.forEach(id => {
                 const idx = state.clips.findIndex(c => c.id === id); if (idx === -1) return;
-                const clip = state.clips[idx]; if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } }
+                const clip = state.clips[idx]; if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } clip.sourceNode.disconnect(); }
                 if (clip.el) clip.el.remove(); state.clips.splice(idx, 1);
             });
             state.selectedClipIds = []; updateCrossfades(); saveState();
+            if (wasPlaying) play();
         }
 
         function rippleDeleteSelected() {
@@ -1710,7 +1788,7 @@
             let earliestStart = Infinity;
 
             const clipsToDelete = state.selectedClipIds.map(id => state.clips.find(c => c.id === id)).filter(Boolean);
-            clipsToDelete.sort((a, b) => b.startTime - a.startTime);
+            clipsToDelete.sort((a, b) => b.startTime - a.startTime); // Descending
 
             clipsToDelete.forEach(clip => {
                 earliestStart = Math.min(earliestStart, clip.startTime);
@@ -1720,7 +1798,7 @@
 
                 const idx = state.clips.findIndex(c => c.id === clip.id);
                 if (idx !== -1) {
-                    if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } }
+                    if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } clip.sourceNode.disconnect(); }
                     if (clip.el) clip.el.remove();
                     state.clips.splice(idx, 1);
                 }
@@ -1734,13 +1812,8 @@
             });
 
             state.selectedClipIds = [];
-            if (earliestStart !== Infinity) {
-                state.pauseTime = earliestStart;
-                updatePlayheadUI(state.pauseTime);
-            }
-
-            updateCrossfades(); updateWorkspaceWidth(); saveState();
-            if (wasPlaying) play();
+            if (earliestStart !== Infinity) { state.pauseTime = earliestStart; updatePlayheadUI(state.pauseTime); }
+            updateCrossfades(); updateWorkspaceWidth(); saveState(); if (wasPlaying) play();
         }
 
         function copySelected() {
@@ -1766,7 +1839,6 @@
             if (wasPlaying) play();
         }
 
-        /* --- STREAMING_CHUNK:UI Updates and VUMeter... --- */
         function animationLoop() {
             if (!state.isPlaying && !state.isRecording) return;
 
@@ -1774,14 +1846,15 @@
 
             if (state.isPlaying) {
                 timeToDisplay = audioCtx.currentTime - state.playbackStartTime;
+            } else if (state.isRecording) {
+                timeToDisplay = state.pauseTime + (audioCtx.currentTime - state.recordingStartTime);
             }
 
-            state.pauseTime = timeToDisplay;
-            updatePlayheadUI(state.pauseTime);
+            updatePlayheadUI(timeToDisplay);
 
             if (state.isRecording) {
                 const liveEl = document.getElementById('live-rec-el');
-                const liveWidth = (timeToDisplay - state.recordingStartTime) * state.pixelsPerSecond;
+                const liveWidth = (timeToDisplay - state.pauseTime) * state.pixelsPerSecond;
                 if (liveEl) liveEl.style.width = `${liveWidth}px`;
 
                 if (state.micAnalyser && state.liveCanvasCtx) {
@@ -1795,24 +1868,26 @@
                     }
 
                     const amp = state.liveCanvasCtx.canvas.height / 2;
-                    const normMin = (min - 128) / 128;
-                    const normMax = (max - 128) / 128;
-
-                    const drawX = liveWidth;
-                    const widthToDraw = Math.max(1, drawX - state.lastDrawX);
-
-                    const y = Math.round(amp - (normMax * amp));
-                    const h = Math.max(1, Math.round((normMax - normMin) * amp));
+                    const normMin = (min - 128) / 128; const normMax = (max - 128) / 128;
+                    const drawX = liveWidth; const widthToDraw = Math.max(1, drawX - state.lastDrawX);
+                    const y = Math.round(amp - (normMax * amp)); const h = Math.max(1, Math.round((normMax - normMin) * amp));
 
                     state.liveCanvasCtx.fillRect(state.lastDrawX, y, widthToDraw, h);
                     state.lastDrawX = drawX;
                 }
             }
 
-            const px = state.pauseTime * state.pixelsPerSecond;
+            const px = timeToDisplay * state.pixelsPerSecond;
             if (px > DOM.timelineContainer.scrollLeft + DOM.timelineContainer.clientWidth - 50) {
                 DOM.timelineContainer.scrollLeft = px - DOM.timelineContainer.clientWidth + 100;
             }
+
+            // Auto expand during playback/recording if we approach the end of the wrapper
+            const currentWrapperWidthPx = parseInt(DOM.timelineWrapper.style.width) || 0;
+            if (timeToDisplay > (currentWrapperWidthPx / state.pixelsPerSecond) - 5) {
+                updateWorkspaceWidth();
+            }
+
             state.animationId = requestAnimationFrame(animationLoop);
         }
 
@@ -1823,8 +1898,23 @@
         }
 
         function updateWorkspaceWidth() {
-            let max = 60; state.clips.forEach(c => { if (c.startTime + c.duration > max) max = c.startTime + c.duration; });
-            DOM.tracksArea.style.minWidth = `${(max + 10) * state.pixelsPerSecond}px`;
+            let maxTime = 60; // Forcer au minimum 60 secondes d'espace
+            state.clips.forEach(c => { if (c.startTime + c.duration > maxTime) maxTime = c.startTime + c.duration; });
+
+            // Si le curseur de lecture est plus loin que la fin du dernier clip (ex: pendant l'enregistrement)
+            let currentTime = state.isPlaying ? (audioCtx.currentTime - state.playbackStartTime) : (state.isRecording ? (state.pauseTime + (audioCtx.currentTime - state.recordingStartTime)) : state.pauseTime);
+            if (currentTime > maxTime) maxTime = currentTime;
+
+            // Calcul en pixels de la largeur nécessaire
+            const viewportWidth = DOM.timelineContainer.clientWidth;
+            const neededWidthPx = Math.max(viewportWidth, (maxTime + 10) * state.pixelsPerSecond);
+
+            // On FORCE la largeur du wrapper en pixels durs.
+            // Cela oblige TOUS les enfants (règle, tracks) à s'étirer !
+            DOM.timelineWrapper.style.width = `${neededWidthPx}px`;
+
+            // Redessine la règle pour l'adapter à cette nouvelle taille en pixels
+            drawRuler(neededWidthPx);
         }
 
         function startVUMeter() {
@@ -1843,7 +1933,6 @@
             draw();
         }
 
-        /* --- STREAMING_CHUNK:Theme and Export... --- */
         document.getElementById('btn-theme').onclick = () => {
             const html = document.documentElement; html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
             setTimeout(() => { startVUMeter(); state.clips.forEach(c => { const trk = state.tracks.find(t => t.id === c.trackId); if (trk) drawWaveform(c, c.el.querySelector('.clip-waveform'), trk.height); }); }, 50);
@@ -1877,7 +1966,7 @@
                 const renderedBuffer = await offlineCtx.startRendering(); const wavBlob = bufferToWave(renderedBuffer, renderedBuffer.length);
                 let name = document.getElementById('export-filename').value.trim() || "Montage_Podcast";
                 const a = document.createElement('a'); a.href = URL.createObjectURL(wavBlob); a.download = `${name}.wav`; a.click();
-            } catch (e) { alert("Erreur d'exportation."); }
+            } catch (e) { alert("⚠️ Erreur d'exportation.\n\nSur BRAVE : La protection contre le 'Fingerprinting' bloque l'export audio. Désactivez les Boucliers (Shields) et réessayez."); }
             btn.innerHTML = 'EXPORT MIX'; btn.disabled = false;
         });
 
@@ -1890,86 +1979,63 @@
             return new Blob([buffer], { type: "audio/wav" });
         }
 
-        /* --- STREAMING_CHUNK:Lasso Selection Box... --- */
-        let isLassoing = false;
-        let lassoStartX = 0;
-        let lassoStartY = 0;
-        let initialSelectedIds = [];
+        let isLassoing = false; let lassoHasDragged = false; let lassoStartX = 0; let lassoStartY = 0; let initialSelectedIds = [];
 
         DOM.tracksArea.addEventListener('mousedown', (e) => {
-            if (state.activeTool !== 'select' || e.target.closest('.audio-clip') || e.target.closest('.playhead') || e.target.closest('.time-ruler')) return;
+            if (state.activeTool !== 'select') return;
+            if (e.target.closest('.audio-clip') || e.target.closest('.playhead-handle') || e.target.closest('.time-ruler')) return;
 
-            isLassoing = true;
-            const rect = DOM.tracksArea.getBoundingClientRect();
-            lassoStartX = e.clientX - rect.left + DOM.timelineContainer.scrollLeft;
-            lassoStartY = e.clientY - rect.top;
+            isLassoing = true; lassoHasDragged = false; const rect = DOM.tracksArea.getBoundingClientRect();
+            lassoStartX = e.clientX - rect.left; lassoStartY = e.clientY - rect.top;
 
-            DOM.selectionBox.style.left = `${lassoStartX}px`;
-            DOM.selectionBox.style.top = `${lassoStartY}px`;
-            DOM.selectionBox.style.width = '0px';
-            DOM.selectionBox.style.height = '0px';
-            DOM.selectionBox.style.display = 'block';
+            DOM.selectionBox.style.left = `${lassoStartX}px`; DOM.selectionBox.style.top = `${lassoStartY}px`;
+            DOM.selectionBox.style.width = '0px'; DOM.selectionBox.style.height = '0px'; DOM.selectionBox.style.display = 'block';
 
-            if (!e.shiftKey) {
-                state.selectedClipIds = [];
-                document.querySelectorAll('.audio-clip').forEach(el => el.classList.remove('selected'));
-                initialSelectedIds = [];
-            } else {
-                initialSelectedIds = [...state.selectedClipIds];
-            }
+            if (!e.shiftKey) { state.selectedClipIds = []; document.querySelectorAll('.audio-clip').forEach(el => el.classList.remove('selected')); initialSelectedIds = []; }
+            else { initialSelectedIds = [...state.selectedClipIds]; }
         });
 
         document.addEventListener('mousemove', (e) => {
             if (!isLassoing) return;
             const rect = DOM.tracksArea.getBoundingClientRect();
-            let currentX = e.clientX - rect.left + DOM.timelineContainer.scrollLeft;
-            let currentY = e.clientY - rect.top;
+            let currentX = e.clientX - rect.left; let currentY = e.clientY - rect.top;
+            let width = Math.abs(currentX - lassoStartX); let height = Math.abs(currentY - lassoStartY);
 
-            let left = Math.min(lassoStartX, currentX);
-            let top = Math.min(lassoStartY, currentY);
-            let width = Math.abs(currentX - lassoStartX);
-            let height = Math.abs(currentY - lassoStartY);
+            if (width > 3 || height > 3) lassoHasDragged = true;
 
-            DOM.selectionBox.style.left = `${left}px`;
-            DOM.selectionBox.style.top = `${top}px`;
-            DOM.selectionBox.style.width = `${width}px`;
-            DOM.selectionBox.style.height = `${height}px`;
+            let left = Math.min(lassoStartX, currentX); let top = Math.min(lassoStartY, currentY);
+            DOM.selectionBox.style.left = `${left}px`; DOM.selectionBox.style.top = `${top}px`;
+            DOM.selectionBox.style.width = `${width}px`; DOM.selectionBox.style.height = `${height}px`;
 
             state.clips.forEach(clip => {
                 if (!clip.el) return;
-                const clipRect = clip.el.getBoundingClientRect();
-                const boxRect = DOM.selectionBox.getBoundingClientRect();
-
-                const isIntersecting = !(
-                    clipRect.right < boxRect.left ||
-                    clipRect.left > boxRect.right ||
-                    clipRect.bottom < boxRect.top ||
-                    clipRect.top > boxRect.bottom
-                );
+                const clipRect = clip.el.getBoundingClientRect(); const boxRect = DOM.selectionBox.getBoundingClientRect();
+                const isIntersecting = !(clipRect.right < boxRect.left || clipRect.left > boxRect.right || clipRect.bottom < boxRect.top || clipRect.top > boxRect.bottom);
 
                 if (isIntersecting) {
-                    if (!state.selectedClipIds.includes(clip.id)) {
-                        state.selectedClipIds.push(clip.id);
-                        clip.el.classList.add('selected');
-                    }
+                    if (!state.selectedClipIds.includes(clip.id)) { state.selectedClipIds.push(clip.id); clip.el.classList.add('selected'); }
                 } else if (!initialSelectedIds.includes(clip.id)) {
                     const idx = state.selectedClipIds.indexOf(clip.id);
-                    if (idx > -1) {
-                        state.selectedClipIds.splice(idx, 1);
-                        clip.el.classList.remove('selected');
-                    }
+                    if (idx > -1) { state.selectedClipIds.splice(idx, 1); clip.el.classList.remove('selected'); }
                 }
             });
         });
 
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('mouseup', (e) => {
             if (isLassoing) {
-                isLassoing = false;
-                DOM.selectionBox.style.display = 'none';
+                isLassoing = false; DOM.selectionBox.style.display = 'none';
             }
         });
 
-        renderTracksDOM(); openOnboarding(); // Init
+        renderTracksDOM(); openOnboarding();
+
+        // Calcul initial de la largeur
+        updateWorkspaceWidth();
+
+        // Recalcul en cas de redimensionnement de la fenêtre
+        window.addEventListener('resize', () => {
+            updateWorkspaceWidth();
+        });
     </script>
 </body>
 
