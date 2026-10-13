@@ -296,7 +296,7 @@
             min-width: 0;
         }
 
-        /* Le NOUVEAU wrapper qui force la largeur de toute la timeline */
+        /* Le WRAPPER qui force la largeur de la timeline au-delà de 10s */
         .timeline-wrapper {
             position: relative;
             min-width: 100%;
@@ -369,7 +369,6 @@
             cursor: text;
             overflow: hidden;
             width: 100%;
-            /* S'adapte au timeline-wrapper */
         }
 
         .ruler-mark {
@@ -576,25 +575,6 @@
             letter-spacing: 0.5px;
         }
 
-        .clip-gain-display {
-            position: absolute;
-            top: 16px;
-            left: 6px;
-            font-size: 9px;
-            font-weight: 700;
-            z-index: 4;
-            pointer-events: none;
-            color: var(--bg-base);
-            background: var(--text-primary);
-            padding: 0 4px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .clip-gain-display.show {
-            opacity: 1;
-        }
-
         .handle-trim {
             position: absolute;
             top: 0;
@@ -615,75 +595,6 @@
 
         .handle-trim.right {
             right: 0;
-        }
-
-        .clip-gain-line {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 3px;
-            cursor: ns-resize;
-            z-index: 15;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .clip-gain-line::after {
-            content: '';
-            width: 100%;
-            height: 1px;
-            background: var(--text-primary);
-            opacity: 0.5;
-            transition: 0.2s;
-        }
-
-        .clip-gain-line:hover::after {
-            opacity: 1;
-            height: 2px;
-        }
-
-        .handle-fade {
-            position: absolute;
-            top: -3px;
-            width: 6px;
-            height: 6px;
-            cursor: pointer;
-            z-index: 16;
-            background: var(--text-primary);
-        }
-
-        .handle-fade.left {
-            left: -3px;
-        }
-
-        .handle-fade.right {
-            right: -3px;
-        }
-
-        .fade-poly {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            background: var(--bg-base);
-            pointer-events: none;
-            z-index: 4;
-            opacity: 0.7;
-        }
-
-        .fade-poly.left {
-            left: 0;
-            clip-path: polygon(0 0, 0 100%, 100% 0);
-        }
-
-        .fade-poly.right {
-            right: 0;
-            clip-path: polygon(0 0, 100% 0, 100% 100%);
-        }
-
-        .fade-poly.auto-fade {
-            background: var(--accent);
-            opacity: 0.4;
         }
 
         /* LIVE REC CLIP */
@@ -707,7 +618,7 @@
             font-weight: bold;
         }
 
-        /* PLAYHEAD (ATTRACTABLE ANYWHERE) */
+        /* PLAYHEAD */
         .playhead {
             position: absolute;
             top: -30px;
@@ -940,17 +851,17 @@
 </head>
 
 <body>
-    <!-- ONBOARDING MODAL -->
     <div class="modal-overlay" id="onboarding-modal">
         <div class="modal-box">
             <button class="btn-skip" onclick="closeOnboarding()">PASSER (SKIP) ✕</button>
             <div id="slides-container">
                 <div class="onboarding-slide active">
                     <div class="slide-icon"><i class="fa-solid fa-microphone-lines"></i></div>
-                    <div class="slide-title">1. ENREGISTREMENT</div>
-                    <div class="slide-text">Cliquez sur le bouton <strong>R</strong> d'une piste pour
-                        l'armer.<br>Ensuite, cliquez sur le gros bouton <strong>REC</strong> en haut pour enregistrer
-                        votre voix.</div>
+                    <div class="slide-title">1. ENREGISTREMENT & LECTURE</div>
+                    <div class="slide-text">Cliquez sur <strong>R</strong> pour démarrer l'enregistrement, puis à
+                        nouveau sur <strong>R</strong> pour terminer.<br>Appuyez sur <strong>P</strong> pour faire une
+                        Pause, et <strong>P</strong> pour Reprendre.<br>Appuyez sur <strong>L</strong> pour lancer la
+                        Lecture d'un enregistrement.</div>
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon"><i class="fa-solid fa-file-import"></i></div>
@@ -960,24 +871,24 @@
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon"><i class="fa-solid fa-hand"></i></div>
-                    <div class="slide-title">3. SÉLECTIONNER & DÉPLACER</div>
-                    <div class="slide-text">Choisissez l'outil <strong>SÉLECTION (V)</strong> en haut.<br>Attrapez
-                        n'importe quel clip pour le glisser dans le temps.<br><br><em>Astuce : Tracez un rectangle dans
-                            le vide avec la souris pour sélectionner plusieurs clips d'un coup (Lasso) !</em></div>
+                    <div class="slide-title">3. SÉLECTION MULTIPLE</div>
+                    <div class="slide-text">Choisissez l'outil <strong>SÉLECTION (V)</strong> en haut.<br>Faites glisser
+                        votre souris dans le vide pour attraper plusieurs clips d'un coup (Lasso).<br><em>Astuce :
+                            Maintenez Maj pour en ajouter d'autres.</em></div>
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon"><i class="fa-solid fa-scissors"></i></div>
                     <div class="slide-title">4. LE MONTAGE (COUPER)</div>
-                    <div class="slide-text">Choisissez l'outil <strong>CISEAUX (C)</strong> en haut, puis cliquez sur un
-                        son pour le couper instantanément.<br><br><em>Astuce: Vous pouvez aussi utiliser la touche
-                            <strong>S</strong> pour couper la piste sélectionnée au niveau de la ligne rouge.</em></div>
+                    <div class="slide-text">Prenez l'outil <strong>CISEAUX (C)</strong> et cliquez sur un son pour le
+                        couper.<br>Vous pouvez aussi utiliser la touche <strong>S</strong> pour couper la piste
+                        sélectionnée.<br><em>Maj + S coupe toutes les pistes d'un coup !</em></div>
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon"><i class="fa-solid fa-trash-can"></i></div>
                     <div class="slide-title">5. SUPPRESSION MAGIQUE</div>
-                    <div class="slide-text">Sélectionnez un clip raté et appuyez sur <strong>D</strong> pour
-                        l'effacer.<br>Encore plus fort : appuyez sur <strong>MAJ + D</strong> ! Cela effacera le son et
-                        reculera automatiquement tout le reste pour <strong>boucher le trou</strong>.</div>
+                    <div class="slide-text">Sélectionnez un raté et appuyez sur <strong>D</strong> pour
+                        l'effacer.<br>Encore plus fort : <strong>MAJ + D</strong> effacera le son et reculera
+                        automatiquement le reste pour <strong>boucher le trou</strong> !</div>
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon" style="color: var(--accent);"><i
@@ -985,10 +896,9 @@
                     <div class="slide-title">⚠️ ATTENTION !</div>
                     <div class="slide-text alert-red">RIEN NE SE SAUVEGARDE TOUT SEUL !<br><br>Si vous fermez cette
                         page, votre travail sera perdu.<br>Vous DEVEZ cliquer sur "EXPORT MIX" pour télécharger votre
-                        travail final en .WAV avant de quitter.</div>
+                        fichier final en .WAV avant de quitter.</div>
                 </div>
             </div>
-
             <div class="onboarding-nav">
                 <button class="btn-modal" id="btn-prev-slide" style="visibility: hidden;">◄ PRÉCÉDENT</button>
                 <div class="dots" id="slide-dots"></div>
@@ -997,7 +907,6 @@
         </div>
     </div>
 
-    <!-- EXPORT MODAL -->
     <div class="modal-overlay" id="export-modal" style="display: none;">
         <div class="modal-box">
             <div class="slide-title">SAUVEGARDER LE PODCAST</div>
@@ -1017,45 +926,39 @@
         </div>
     </div>
 
-    <!-- TOPBAR -->
     <div class="topbar">
         <div class="topbar-group">
             <div class="logo-container">
                 <div class="logo-icon">[:.:]</div>
                 <div class="pixel-text" style="font-size: 20px;">STUD</div>
             </div>
-
             <button class="icon-btn btn-help" onclick="openOnboarding()" title="AIDE">?</button>
             <button class="icon-btn" id="btn-theme" title="THEME"><i
                     class="fa-solid fa-circle-half-stroke"></i></button>
-
             <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 5px;"></div>
-
             <div class="tool-selector">
                 <button class="icon-btn tool-btn active" id="tool-select" title="OUTIL SÉLECTION (V)"><i
                         class="fa-solid fa-arrow-pointer"></i></button>
                 <button class="icon-btn tool-btn" id="tool-cut" title="OUTIL CISEAUX (C)"><i
                         class="fa-solid fa-scissors"></i></button>
             </div>
-
             <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 5px;"></div>
-
             <button class="icon-btn" id="btn-undo" title="UNDO (CTRL+Z)" disabled><i
                     class="fa-solid fa-rotate-left"></i></button>
             <button class="icon-btn" id="btn-redo" title="REDO (CTRL+Y)" disabled><i
                     class="fa-solid fa-rotate-right"></i></button>
-
             <div style="width: 1px; height: 20px; background: var(--border-color); margin: 0 5px;"></div>
-
             <button class="icon-btn" id="btn-zoom-out" title="ZOOM OUT"><i class="fa-solid fa-minus"></i></button>
             <button class="icon-btn" id="btn-zoom-in" title="ZOOM IN"><i class="fa-solid fa-plus"></i></button>
         </div>
 
         <div class="transport-controls">
-            <button class="t-play-btn" id="btn-rec" title="RECORD"><i class="fa-solid fa-circle"></i></button>
-            <button class="t-play-btn" id="btn-play" title="PLAY (ESPACE)"><i class="fa-solid fa-play"></i></button>
-            <button class="t-play-btn" id="btn-pause" title="PAUSE"><i class="fa-solid fa-pause"></i></button>
-            <button class="t-play-btn" id="btn-stop" title="STOP"><i class="fa-solid fa-square"></i></button>
+            <button class="t-play-btn" id="btn-rec" title="RECORD / STOP (R)"><i
+                    class="fa-solid fa-circle"></i></button>
+            <button class="t-play-btn" id="btn-play" title="LECTURE (L)"><i class="fa-solid fa-play"></i></button>
+            <button class="t-play-btn" id="btn-pause" title="PAUSE / REPRISE (P)"><i
+                    class="fa-solid fa-pause"></i></button>
+            <button class="t-play-btn" id="btn-stop" title="STOP (ESPACE)"><i class="fa-solid fa-square"></i></button>
             <div class="time-display" id="time-display">00:00.0</div>
         </div>
 
@@ -1065,7 +968,6 @@
         </div>
     </div>
 
-    <!-- MAIN WORKSPACE -->
     <div class="main-content">
         <div class="editor" id="workspace">
             <div class="track-headers-container" id="headers-container">
@@ -1076,7 +978,6 @@
             </div>
 
             <div class="timeline-container" id="timeline-container">
-                <!-- LE WRAPPER QUI FORCE LA LARGEUR -->
                 <div class="timeline-wrapper" id="timeline-wrapper">
                     <div class="time-ruler" id="ruler"></div>
                     <div class="tracks-area" id="tracks-area">
@@ -1099,14 +1000,14 @@
         </div>
     </div>
 
-    <!-- INSTRUCTIONS FOOTER -->
     <div class="instructions-footer">
         <div class="inst-group">
+            <div><kbd>R</kbd> REC / STOP</div>
+            <div><kbd>P</kbd> PAUSE / REPRISE</div>
+            <div><kbd>L</kbd> LECTURE</div>
             <div><kbd>V</kbd> SELECT</div>
             <div><kbd>C</kbd> CISEAUX</div>
-            <div><kbd>ESPACE</kbd> LECTURE</div>
             <div><kbd>S</kbd> COUPER PISTE</div>
-            <div><kbd>MAJ+S</kbd> COUPER TOUT</div>
             <div><kbd>D</kbd> SUPPRIMER</div>
             <div><kbd>MAJ+D</kbd> SUPPR. MAGIQUE</div>
             <div><kbd>CTRL+C/V</kbd> COPIER/COLLER</div>
@@ -1126,6 +1027,7 @@
             playbackStartTime: 0, pauseTime: 0, activeTool: 'select',
             selectedClipIds: [], armedTrackId: 't0', selectedTrackId: 't0', clipboard: [],
             recCount: 1, recordingStartTime: 0, mediaRecorder: null, recordedChunks: [],
+            isRecordingPaused: false, recordingPauseCtx: 0, totalRecordingPause: 0, recordingStartTimeline: 0,
             animationId: null, clips: [], snapThreshold: 0.2,
             tracks: [
                 { id: 't0', name: 'Voix 1', volume: 1, muted: false, solo: false, height: 120, gainNode: null },
@@ -1143,21 +1045,19 @@
             snapInd: document.getElementById('snap-indicator'), timeDisplay: document.getElementById('time-display'), fileInput: document.getElementById('file-input'),
             canvasVU: document.getElementById('vu-meter'), btnUndo: document.getElementById('btn-undo'), btnRedo: document.getElementById('btn-redo'),
             timelineContainer: document.getElementById('timeline-container'), timelineWrapper: document.getElementById('timeline-wrapper'),
-            btnPlay: document.getElementById('btn-play'), btnPause: document.getElementById('btn-pause'), btnStop: document.getElementById('btn-stop'),
+            btnPlay: document.getElementById('btn-play'), btnPause: document.getElementById('btn-pause'), btnStop: document.getElementById('btn-stop'), btnRec: document.getElementById('btn-rec'),
             selectionBox: document.getElementById('selection-box')
         };
         const ctxVU = DOM.canvasVU.getContext('2d');
         let targetTrackIdForImport = null;
 
-        /* --- SECURITY BEFOREUNLOAD --- */
+        /* --- STREAMING_CHUNK:Security and Onboarding... --- */
         window.addEventListener('beforeunload', (e) => {
             if (state.studioOpened && state.clips.length > 0) { e.preventDefault(); e.returnValue = ''; }
         });
 
-        /* --- ONBOARDING SLIDESHOW --- */
         const slides = document.querySelectorAll('.onboarding-slide');
         const dotsContainer = document.getElementById('slide-dots');
-
         slides.forEach((_, i) => {
             const dot = document.createElement('div'); dot.className = 'dot' + (i === 0 ? ' active' : '');
             dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot);
@@ -1169,7 +1069,6 @@
             currentSlide = n;
             slides[currentSlide].classList.add('active');
             dotsContainer.children[currentSlide].classList.add('active');
-
             document.getElementById('btn-prev-slide').style.visibility = currentSlide === 0 ? 'hidden' : 'visible';
             document.getElementById('btn-next-slide').innerText = currentSlide === slides.length - 1 ? 'J\'AI COMPRIS, COMMENCER !' : 'SUIVANT ►';
             document.getElementById('btn-next-slide').style.background = currentSlide === slides.length - 1 ? 'var(--text-primary)' : 'transparent';
@@ -1177,21 +1076,15 @@
         }
 
         document.getElementById('btn-prev-slide').onclick = () => { if (currentSlide > 0) goToSlide(currentSlide - 1); };
-        document.getElementById('btn-next-slide').onclick = () => {
-            if (currentSlide < slides.length - 1) goToSlide(currentSlide + 1);
-            else closeOnboarding();
-        };
-
-        function closeOnboarding() { document.getElementById('onboarding-modal').style.display = 'none'; initAudio(); state.studioOpened = true; }
+        document.getElementById('btn-next-slide').onclick = () => { if (currentSlide < slides.length - 1) goToSlide(currentSlide + 1); else closeOnboarding(); };
+        function closeOnboarding() { document.getElementById('onboarding-modal').style.display = 'none'; initAudio(); state.studioOpened = true; saveState(); }
         function openOnboarding() { document.getElementById('onboarding-modal').style.display = 'flex'; goToSlide(0); }
 
+        /* --- STREAMING_CHUNK:Audio Context and Mixer Setup... --- */
         async function decodeAudioSafe(arrayBuffer) {
             return new Promise((resolve, reject) => {
-                try {
-                    audioCtx.decodeAudioData(arrayBuffer, resolve, reject);
-                } catch (e) {
-                    reject(e);
-                }
+                try { audioCtx.decodeAudioData(arrayBuffer, resolve, reject); }
+                catch (e) { reject(e); }
             });
         }
 
@@ -1203,15 +1096,10 @@
                     masterGain.connect(analyser); analyser.connect(audioCtx.destination);
                     state.tracks.forEach(t => { t.gainNode = audioCtx.createGain(); t.gainNode.gain.value = t.volume; t.gainNode.connect(masterGain); });
                     startVUMeter();
-
-                    // On force l'état initial dans l'historique
-                    history.past = [];
-                    history.future = [];
-                    saveState();
-
+                    history.past = []; history.future = [];
                     renderTracksDOM(); updateWorkspaceWidth();
                 } catch (e) {
-                    alert("⚠️ Impossible d'initialiser le moteur audio.\nSi vous utilisez Brave, désactivez les Boucliers (Shields) agressifs.");
+                    alert("⚠️ Impossible d'initialiser le moteur audio.\n\nSur Brave : Cliquez sur la tête de lion dans la barre d'adresse, et désactivez les 'Boucliers' (Shields) pour ce site afin d'autoriser le traitement audio.");
                 }
             }
             if (audioCtx && audioCtx.state === 'suspended') {
@@ -1228,33 +1116,8 @@
             });
         }
 
-        function getSnapTime(time, ignoreClipIds) {
-            let snapPoints = [state.pauseTime];
-            state.clips.forEach(c => {
-                if (!ignoreClipIds.includes(c.id)) {
-                    snapPoints.push(c.startTime);
-                    snapPoints.push(c.startTime + c.duration);
-                }
-            });
-            let closest = time; let minDiff = state.snapThreshold;
-            snapPoints.forEach(p => { if (Math.abs(time - p) < minDiff) { minDiff = Math.abs(time - p); closest = p; } });
-            if (closest !== time) { DOM.snapInd.style.opacity = 1; DOM.snapInd.style.left = `${closest * state.pixelsPerSecond}px`; }
-            else { DOM.snapInd.style.opacity = 0; }
-            return closest;
-        }
-
-        function setTool(tool) {
-            state.activeTool = tool;
-            document.getElementById('tool-select').classList.toggle('active', tool === 'select');
-            document.getElementById('tool-cut').classList.toggle('active', tool === 'cut');
-            if (tool === 'cut') document.body.classList.add('tool-cut');
-            else document.body.classList.remove('tool-cut');
-        }
-        document.getElementById('tool-select').onclick = () => setTool('select');
-        document.getElementById('tool-cut').onclick = () => setTool('cut');
-
+        /* --- STREAMING_CHUNK:History and State Management... --- */
         function cloneClips() { return state.clips.map(c => ({ ...c, sourceNode: null, fadeGainNode: null, clipGainNode: null, el: null })); }
-
         function saveState() {
             history.past.push(cloneClips());
             if (history.past.length > 30) history.past.shift();
@@ -1264,22 +1127,17 @@
 
         function undo() {
             if (history.past.length <= 1) return;
-            history.future.push(cloneClips());
-            history.past.pop();
-            restoreState(history.past[history.past.length - 1]);
-            updateHistoryUI();
+            history.future.push(cloneClips()); history.past.pop();
+            restoreState(history.past[history.past.length - 1]); updateHistoryUI();
         }
 
         function redo() {
             if (!history.future.length) return;
-            const nextState = history.future.pop();
-            history.past.push(cloneClips());
-            restoreState(nextState);
-            updateHistoryUI();
+            const nextState = history.future.pop(); history.past.push(cloneClips());
+            restoreState(nextState); updateHistoryUI();
         }
 
         DOM.btnUndo.onclick = undo; DOM.btnRedo.onclick = redo;
-
         function updateHistoryUI() { DOM.btnUndo.disabled = history.past.length <= 1; DOM.btnRedo.disabled = history.future.length === 0; }
 
         function restoreState(savedClips) {
@@ -1287,21 +1145,18 @@
             document.querySelectorAll('.audio-clip').forEach(el => el.remove());
             state.clips = savedClips.map(c => ({ ...c }));
             state.clips.forEach(clip => renderClipDOM(clip));
-            state.selectedClipIds = []; updateCrossfades(); updateWorkspaceWidth();
+            state.selectedClipIds = []; updateWorkspaceWidth();
             if (wasPlaying) play();
         }
 
+        /* --- STREAMING_CHUNK:Rendering DOM and Tracks... --- */
         function drawRuler(currentWidth) {
             DOM.ruler.innerHTML = '';
             const durationInSeconds = currentWidth / state.pixelsPerSecond;
-
             const step = state.pixelsPerSecond > 80 ? 1 : (state.pixelsPerSecond > 30 ? 5 : 10);
-
             for (let i = 0; i <= durationInSeconds; i += step) {
                 const mark = document.createElement('div');
-                mark.className = 'ruler-mark';
-                mark.style.left = `${i * state.pixelsPerSecond}px`;
-                mark.innerText = i + 's';
+                mark.className = 'ruler-mark'; mark.style.left = `${i * state.pixelsPerSecond}px`; mark.innerText = i + 's';
                 DOM.ruler.appendChild(mark);
             }
         }
@@ -1363,16 +1218,14 @@
 
         DOM.fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0]; if (!file) return; DOM.fileInput.value = '';
-            initAudio();
-            const arrayBuffer = await file.arrayBuffer();
+            initAudio(); const arrayBuffer = await file.arrayBuffer();
             try {
                 const audioBuffer = await decodeAudioSafe(arrayBuffer);
                 createClip(targetTrackIdForImport, file.name.toUpperCase(), audioBuffer, state.pauseTime);
-            } catch (err) {
-                alert("Erreur de lecture du fichier audio. Format non supporté.");
-            }
+            } catch (err) { alert("Erreur de lecture du fichier audio. Format non supporté."); }
         });
 
+        /* --- STREAMING_CHUNK:Clip Creation and Manipulation... --- */
         function createClip(trackId, name, buffer, startTime) {
             const clip = {
                 id: 'c_' + Date.now() + Math.random().toString().slice(2, 5), trackId: trackId, name: name, buffer: buffer,
@@ -1381,84 +1234,31 @@
                 sourceNode: null, fadeGainNode: null, clipGainNode: null, el: null
             };
             state.clips.push(clip); renderClipDOM(clip); selectClip(clip.id, false);
-            updateCrossfades(); updateWorkspaceWidth(); saveState();
+            updateWorkspaceWidth(); saveState();
         }
 
-        document.getElementById('btn-rec').onclick = async () => {
-            initAudio();
-            if (state.isRecording) { stopRecording(); return; }
-            if (state.isPlaying) pause();
-
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("⚠️ Votre navigateur bloque l'accès au micro.\n\nSur BRAVE : Assurez-vous que le site n'est pas bloqué par les Boucliers (Shields).");
-                return;
-            }
-
-            if (!state.armedTrackId) { state.armedTrackId = state.selectedTrackId || state.tracks[0].id; renderTracksDOM(); }
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                state.mediaRecorder = new MediaRecorder(stream); state.recordedChunks = [];
-                state.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) state.recordedChunks.push(e.data); };
-                state.mediaRecorder.onstop = async () => {
-                    const blob = new Blob(state.recordedChunks, { type: 'audio/webm' });
-                    const arrayBuffer = await blob.arrayBuffer();
-                    try {
-                        const audioBuffer = await decodeAudioSafe(arrayBuffer);
-                        createClip(state.armedTrackId, `REC_${state.recCount++}.WAV`, audioBuffer, state.recordingStartTime);
-                    } catch (e) { console.error("Decode rec error", e); }
-                    stream.getTracks().forEach(t => t.stop());
-                };
-
-                state.recordingStartTime = state.pauseTime;
-                state.isRecording = true; state.mediaRecorder.start();
-                document.getElementById('btn-rec').classList.add('rec-active');
-
-                // SETUP LIVE RECORDER VISUALIZER
-                state.micSource = audioCtx.createMediaStreamSource(stream);
-                state.micAnalyser = audioCtx.createAnalyser();
-                state.micAnalyser.fftSize = 512;
-                state.micSource.connect(state.micAnalyser);
-                state.lastDrawX = 0;
-
-                const liveEl = document.createElement('div'); liveEl.className = 'live-rec-clip'; liveEl.id = 'live-rec-el';
-                const lane = DOM.tracksArea.querySelector(`.track-lane[data-track-id="${state.armedTrackId}"]`);
-                const track = state.tracks.find(t => t.id === state.armedTrackId);
-
-                liveEl.style.height = `${track.height - 8}px`;
-                liveEl.style.left = `${state.recordingStartTime * state.pixelsPerSecond}px`;
-
-                const liveCanvas = document.createElement('canvas');
-                liveCanvas.className = 'clip-waveform';
-                liveCanvas.width = 16384;
-                liveCanvas.height = track.height - 8;
-                state.liveCanvasCtx = liveCanvas.getContext('2d');
-                state.liveCanvasCtx.fillStyle = 'rgba(255, 68, 68, 0.8)';
-
-                liveEl.appendChild(liveCanvas);
-                lane.appendChild(liveEl);
-
-                play();
-            } catch (err) {
-                alert("⚠️ Accès au micro refusé ou aucun micro détecté.\n\nSur BRAVE : Désactivez les 'Boucliers' (Shields) en haut à droite (icône lion) pour ce site. Vérifiez que le micro est autorisé dans les paramètres du site.");
-                console.error(err);
-                document.getElementById('btn-rec').classList.remove('rec-active');
-                state.isRecording = false;
-            }
-        };
-
-        function stopRecording() {
-            if (!state.isRecording) return;
-            state.isRecording = false; state.mediaRecorder.stop();
-            document.getElementById('btn-rec').classList.remove('rec-active');
-
-            if (state.micSource) { state.micSource.disconnect(); state.micSource = null; }
-            if (state.micAnalyser) { state.micAnalyser.disconnect(); state.micAnalyser = null; }
-
-            const liveEl = document.getElementById('live-rec-el'); if (liveEl) liveEl.remove();
-
-            if (state.isPlaying) pause();
+        function getSnapTime(time, ignoreClipIds) {
+            let snapPoints = [state.pauseTime];
+            state.clips.forEach(c => {
+                if (!ignoreClipIds.includes(c.id)) {
+                    snapPoints.push(c.startTime); snapPoints.push(c.startTime + c.duration);
+                }
+            });
+            let closest = time; let minDiff = state.snapThreshold;
+            snapPoints.forEach(p => { if (Math.abs(time - p) < minDiff) { minDiff = Math.abs(time - p); closest = p; } });
+            if (closest !== time) { DOM.snapInd.style.opacity = 1; DOM.snapInd.style.left = `${closest * state.pixelsPerSecond}px`; }
+            else { DOM.snapInd.style.opacity = 0; }
+            return closest;
         }
+
+        function setTool(tool) {
+            state.activeTool = tool;
+            document.getElementById('tool-select').classList.toggle('active', tool === 'select');
+            document.getElementById('tool-cut').classList.toggle('active', tool === 'cut');
+            if (tool === 'cut') document.body.classList.add('tool-cut'); else document.body.classList.remove('tool-cut');
+        }
+        document.getElementById('tool-select').onclick = () => setTool('select');
+        document.getElementById('tool-cut').onclick = () => setTool('cut');
 
         function selectClip(id, multi = false) {
             if (!id) { state.selectedClipIds = []; }
@@ -1467,31 +1267,22 @@
                 else state.selectedClipIds.push(id);
             }
             else { state.selectedClipIds = [id]; }
-
-            document.querySelectorAll('.audio-clip').forEach(el => {
-                el.classList.toggle('selected', state.selectedClipIds.includes(el.id));
-            });
+            document.querySelectorAll('.audio-clip').forEach(el => el.classList.toggle('selected', state.selectedClipIds.includes(el.id)));
         }
 
         function renderClipDOM(clip) {
             const lane = DOM.tracksArea.querySelector(`.track-lane[data-track-id="${clip.trackId}"]`); if (!lane) return;
             const track = state.tracks.find(t => t.id === clip.trackId);
-
             const el = document.createElement('div'); el.className = 'audio-clip'; el.id = clip.id; clip.el = el; el.style.height = `${track.height - 8}px`;
             if (state.selectedClipIds.includes(clip.id)) el.classList.add('selected');
 
             const nameEl = document.createElement('div'); nameEl.className = 'clip-name'; nameEl.innerText = clip.name;
-            const gainDisp = document.createElement('div'); gainDisp.className = 'clip-gain-display';
-            const gainLine = document.createElement('div'); gainLine.className = 'clip-gain-line';
             const canvasCont = document.createElement('div'); canvasCont.className = 'clip-canvas-container';
             const canvas = document.createElement('canvas'); canvas.className = 'clip-waveform'; canvasCont.appendChild(canvas);
 
             const hTrimL = document.createElement('div'); hTrimL.className = 'handle-trim left'; const hTrimR = document.createElement('div'); hTrimR.className = 'handle-trim right';
-            const hFadeL = document.createElement('div'); hFadeL.className = 'handle-fade left'; const hFadeR = document.createElement('div'); hFadeR.className = 'handle-fade right';
-            const pFadeL = document.createElement('div'); pFadeL.className = 'fade-poly left'; const pFadeR = document.createElement('div'); pFadeR.className = 'fade-poly right';
 
-            el.append(canvasCont, nameEl, gainDisp, gainLine, pFadeL, pFadeR, hTrimL, hTrimR, hFadeL, hFadeR);
-            lane.appendChild(el);
+            el.append(canvasCont, nameEl, hTrimL, hTrimR); lane.appendChild(el);
 
             drawWaveform(clip, canvas, track.height); updateClipVisuals(clip);
 
@@ -1499,36 +1290,23 @@
 
             const onMouseDown = (e, act) => {
                 e.stopPropagation(); initAudio();
-
-                if (state.activeTool === 'cut') {
-                    const rect = DOM.tracksArea.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    const cutTime = clickX / state.pixelsPerSecond;
-                    splitClipAtTime(clip, cutTime);
-                    return;
-                }
-
+                if (state.activeTool === 'cut') { const rect = DOM.tracksArea.getBoundingClientRect(); splitClipAtTime(clip, (e.clientX - rect.left + DOM.timelineContainer.scrollLeft) / state.pixelsPerSecond); return; }
                 selectTrack(clip.trackId);
                 if (act === 'move') {
                     if (!state.selectedClipIds.includes(clip.id)) selectClip(clip.id, e.shiftKey);
                     else if (e.shiftKey) selectClip(clip.id, true);
                 } else { selectClip(clip.id, false); }
-
                 action = act; startX = e.clientX; startY = e.clientY; hasMoved = false;
                 initialStates = state.clips.filter(c => state.selectedClipIds.includes(c.id)).map(c => ({
                     id: c.id, start: c.startTime, offset: c.startOffset, dur: c.duration, fadeL: c.fadeIn, fadeR: c.fadeOut, gain: c.gain, trackIdx: state.tracks.findIndex(t => t.id === c.trackId)
                 }));
-                if (act === 'gain') gainDisp.classList.add('show');
             };
 
             el.addEventListener('mousedown', (e) => onMouseDown(e, 'move'));
             hTrimL.addEventListener('mousedown', (e) => onMouseDown(e, 'trim-left')); hTrimR.addEventListener('mousedown', (e) => onMouseDown(e, 'trim-right'));
-            hFadeL.addEventListener('mousedown', (e) => onMouseDown(e, 'fade-left')); hFadeR.addEventListener('mousedown', (e) => onMouseDown(e, 'fade-right'));
-            gainLine.addEventListener('mousedown', (e) => onMouseDown(e, 'gain'));
 
             const onMouseMove = (e) => {
-                if (!action) return;
-                hasMoved = true;
+                if (!action) return; hasMoved = true;
                 const deltaX = (e.clientX - startX) / state.pixelsPerSecond; const deltaY = e.clientY - startY;
 
                 if (action === 'move') {
@@ -1538,72 +1316,50 @@
 
                     const mainInit = initialStates.find(s => s.id === clip.id);
                     const trackDelta = targetTrackIdx - mainInit.trackIdx;
-
                     let rawTargetStart = Math.max(0, mainInit.start + deltaX);
                     let snappedStart = getSnapTime(rawTargetStart, state.selectedClipIds);
                     let actualDeltaX = snappedStart - mainInit.start;
 
                     initialStates.forEach(init => {
-                        const c = state.clips.find(x => x.id === init.id);
-                        c.startTime = Math.max(0, init.start + actualDeltaX);
+                        const c = state.clips.find(x => x.id === init.id); c.startTime = Math.max(0, init.start + actualDeltaX);
                         let newTIdx = Math.max(0, Math.min(state.tracks.length - 1, init.trackIdx + trackDelta));
                         const newTrack = state.tracks[newTIdx];
                         if (c.trackId !== newTrack.id) {
-                            c.trackId = newTrack.id;
-                            DOM.tracksArea.querySelector(`.track-lane[data-track-id="${newTrack.id}"]`).appendChild(c.el);
-                            c.el.style.height = `${newTrack.height - 8}px`;
-                            drawWaveform(c, c.el.querySelector('.clip-waveform'), newTrack.height);
+                            c.trackId = newTrack.id; DOM.tracksArea.querySelector(`.track-lane[data-track-id="${newTrack.id}"]`).appendChild(c.el);
+                            c.el.style.height = `${newTrack.height - 8}px`; drawWaveform(c, c.el.querySelector('.clip-waveform'), newTrack.height);
                         }
                         updateClipVisuals(c);
                     });
                 }
                 else {
                     let fC = clip; let init = initialStates[0];
-                    if (action === 'gain') { fC.gain = Math.max(0, Math.min(init.gain - (deltaY / 50), 5.0)); }
-                    else if (action === 'trim-left') {
-                        let rawStart = init.start + deltaX;
-                        let snappedStart = getSnapTime(rawStart, [clip.id]);
-                        let actualDelta = snappedStart - init.start;
+                    if (action === 'trim-left') {
+                        let rawStart = init.start + deltaX; let snappedStart = getSnapTime(rawStart, [clip.id]); let actualDelta = snappedStart - init.start;
                         actualDelta = Math.max(-init.offset, Math.min(init.dur - 0.1, actualDelta));
                         fC.startOffset = init.offset + actualDelta; fC.duration = init.dur - actualDelta; fC.startTime = init.start + actualDelta;
-                        if (fC.fadeIn > fC.duration) fC.fadeIn = fC.duration; if (fC.fadeOut > fC.duration) fC.fadeOut = fC.duration;
                     }
                     else if (action === 'trim-right') {
-                        let rawEnd = init.start + init.dur + deltaX;
-                        let snappedEnd = getSnapTime(rawEnd, [clip.id]);
-                        let actualDelta = snappedEnd - (init.start + init.dur);
+                        let rawEnd = init.start + init.dur + deltaX; let snappedEnd = getSnapTime(rawEnd, [clip.id]); let actualDelta = snappedEnd - (init.start + init.dur);
                         let d = actualDelta; const maxDur = fC.buffer.duration - fC.startOffset;
-                        if (init.dur + d > maxDur) d = maxDur - init.dur; if (init.dur + d < 0.1) d = 0.1 - init.dur;
-                        fC.duration = init.dur + d;
-                        if (fC.fadeIn > fC.duration) fC.fadeIn = fC.duration; if (fC.fadeOut > fC.duration) fC.fadeOut = fC.duration;
+                        if (init.dur + d > maxDur) d = maxDur - init.dur; if (init.dur + d < 0.1) d = 0.1 - init.dur; fC.duration = init.dur + d;
                     }
-                    else if (action === 'fade-left') { fC.fadeIn = Math.max(0, Math.min(init.fadeL + deltaX, fC.duration - fC.fadeOut)); }
-                    else if (action === 'fade-right') { fC.fadeOut = Math.max(0, Math.min(init.fadeR - deltaX, fC.duration - fC.fadeIn)); }
                     updateClipVisuals(fC);
                 }
-                updateCrossfades(); if (action !== 'gain' && !action.includes('fade')) updateWorkspaceWidth();
+                updateWorkspaceWidth();
             };
 
-            const onMouseUp = () => {
-                if (action) {
-                    if (action === 'gain') gainDisp.classList.remove('show');
-                    action = null;
-                    DOM.snapInd.style.opacity = 0;
-                    if (hasMoved) { saveState(); hasMoved = false; }
-                }
-            };
+            const onMouseUp = () => { if (action) { action = null; DOM.snapInd.style.opacity = 0; if (hasMoved) { saveState(); hasMoved = false; } } };
             document.addEventListener('mousemove', onMouseMove); document.addEventListener('mouseup', onMouseUp);
         }
 
+        /* --- STREAMING_CHUNK:Waveforms and Visuals... --- */
         function drawWaveform(clip, canvas, trackHeight) {
             const dpr = window.devicePixelRatio || 1; const cssWidth = clip.buffer.duration * state.pixelsPerSecond; const cssHeight = trackHeight - 8;
             canvas.style.width = `${cssWidth}px`; canvas.style.height = `${cssHeight}px`;
-            const internalWidth = Math.min(Math.floor(cssWidth * dpr), 16384);
-            canvas.width = internalWidth; canvas.height = Math.floor(cssHeight * dpr);
+            const internalWidth = Math.min(Math.floor(cssWidth * dpr), 16384); canvas.width = internalWidth; canvas.height = Math.floor(cssHeight * dpr);
             const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height);
             const data = clip.buffer.getChannelData(0); const step = Math.max(1, Math.floor(data.length / internalWidth)); const amp = canvas.height / 2;
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)';
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark'; ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)';
             for (let i = 0; i < internalWidth; i++) {
                 let min = 1.0; let max = -1.0; const offset = i * step; const limit = Math.min(offset + step, data.length);
                 for (let j = offset; j < limit; j++) { const d = data[j]; if (d < min) min = d; if (d > max) max = d; }
@@ -1615,127 +1371,107 @@
         function updateClipVisuals(clip) {
             if (!clip.el) return;
             clip.el.style.left = `${clip.startTime * state.pixelsPerSecond}px`; clip.el.style.width = `${clip.duration * state.pixelsPerSecond}px`;
-            const effFadeIn = Math.max(clip.fadeIn || 0, clip.autoFadeIn || 0); const effFadeOut = Math.max(clip.fadeOut || 0, clip.autoFadeOut || 0);
-            const inPx = effFadeIn * state.pixelsPerSecond; const outPx = effFadeOut * state.pixelsPerSecond;
-
-            clip.el.querySelector('.handle-fade.left').style.left = `${inPx - 3}px`;
-            const pLeft = clip.el.querySelector('.fade-poly.left'); pLeft.style.width = `${inPx}px`;
-            pLeft.classList.toggle('auto-fade', (clip.autoFadeIn || 0) > (clip.fadeIn || 0));
-
-            clip.el.querySelector('.handle-fade.right').style.right = `${outPx - 3}px`;
-            const pRight = clip.el.querySelector('.fade-poly.right'); pRight.style.width = `${outPx}px`;
-            pRight.classList.toggle('auto-fade', (clip.autoFadeOut || 0) > (clip.fadeOut || 0));
-
-            let percent = clip.gain <= 1 ? 100 - (clip.gain * 50) : 50 - ((clip.gain - 1) / 4 * 50);
-            clip.el.querySelector('.clip-gain-line').style.top = `${percent}%`;
-            clip.el.querySelector('.clip-gain-display').innerText = `GAIN: ${(clip.gain * 100).toFixed(0)}%`;
             const canvas = clip.el.querySelector('.clip-waveform');
-            canvas.style.transform = `scaleY(${clip.gain})`; canvas.style.left = `-${clip.startOffset * state.pixelsPerSecond}px`;
+            canvas.style.left = `-${clip.startOffset * state.pixelsPerSecond}px`;
         }
 
-        function updateCrossfades() {
-            state.tracks.forEach(track => {
-                const trackClips = state.clips.filter(c => c.trackId === track.id).sort((a, b) => a.startTime - b.startTime);
-                trackClips.forEach(c => { c.autoFadeIn = 0; c.autoFadeOut = 0; });
-                for (let i = 0; i < trackClips.length - 1; i++) {
-                    let cA = trackClips[i];
-                    for (let j = i + 1; j < trackClips.length; j++) {
-                        let cB = trackClips[j]; let overlap = (cA.startTime + cA.duration) - cB.startTime;
-                        if (overlap > 0 && cA.startTime < cB.startTime) {
-                            let max = Math.min(overlap, cA.duration, cB.duration);
-                            if (max > cA.autoFadeOut) cA.autoFadeOut = max; if (max > cB.autoFadeIn) cB.autoFadeIn = max;
-                        }
-                    }
-                }
-            });
-            state.clips.forEach(c => updateClipVisuals(c));
-        }
-
+        /* --- STREAMING_CHUNK:Playback and Transport Logic... --- */
         function scheduleClipPlayback(clip, ctx) {
             const source = ctx.createBufferSource(); source.buffer = clip.buffer;
-            const fadeGain = ctx.createGain(); const clipGain = ctx.createGain(); clipGain.gain.value = clip.gain;
             const track = state.tracks.find(t => t.id === clip.trackId); if (!track || !track.gainNode) return;
-            source.connect(fadeGain); fadeGain.connect(clipGain); clipGain.connect(track.gainNode);
-            if (ctx === audioCtx) { clip.sourceNode = source; clip.fadeGainNode = fadeGain; clip.clipGainNode = clipGain; }
+            source.connect(track.gainNode);
+            if (ctx === audioCtx) { clip.sourceNode = source; }
 
             const ctxTime = ctx.currentTime; const timeToStart = clip.startTime - state.pauseTime;
             let delay = timeToStart; let playOffset = clip.startOffset; let playDuration = clip.duration;
-
             if (timeToStart < 0) { const passed = Math.abs(timeToStart); if (passed >= playDuration) return; playOffset += passed; playDuration -= passed; delay = 0; }
-
-            const absStart = ctxTime + delay; const absEnd = absStart + playDuration;
-            const effFadeIn = Math.max(clip.fadeIn || 0, clip.autoFadeIn || 0); const effFadeOut = Math.max(clip.fadeOut || 0, clip.autoFadeOut || 0);
-
-            fadeGain.gain.setValueAtTime(0, ctxTime);
-            const trueStart = absStart - (timeToStart < 0 ? Math.abs(timeToStart) : 0);
-            const fadeInEnd = trueStart + effFadeIn; const fadeOutStart = trueStart + clip.duration - effFadeOut;
-
-            if (timeToStart >= 0) {
-                fadeGain.gain.setValueAtTime(0, absStart);
-                if (effFadeIn > 0) fadeGain.gain.linearRampToValueAtTime(1, fadeInEnd); else fadeGain.gain.setValueAtTime(1, absStart);
-            } else {
-                if (ctxTime < fadeInEnd) { fadeGain.gain.setValueAtTime((ctxTime - trueStart) / effFadeIn, ctxTime); fadeGain.gain.linearRampToValueAtTime(1, fadeInEnd); }
-                else { fadeGain.gain.setValueAtTime(1, ctxTime); }
-            }
-
-            if (ctxTime < fadeOutStart) { fadeGain.gain.setValueAtTime(1, fadeOutStart); fadeGain.gain.linearRampToValueAtTime(0, absEnd); }
-            else if (ctxTime < absEnd) { fadeGain.gain.setValueAtTime(1 - ((ctxTime - fadeOutStart) / effFadeOut), ctxTime); fadeGain.gain.linearRampToValueAtTime(0, absEnd); }
-
-            source.start(absStart, playOffset, playDuration);
+            source.start(ctxTime + delay, playOffset, playDuration);
         }
 
-        DOM.btnPlay.onclick = play;
         function play() {
-            initAudio(); if (state.isPlaying) return; state.isPlaying = true; state.playbackStartTime = audioCtx.currentTime - state.pauseTime;
+            initAudio();
+            if (state.isRecording) return;
+            if (state.isPlaying) return;
+            state.isPlaying = true;
+            state.playbackStartTime = audioCtx.currentTime - state.pauseTime;
             state.clips.forEach(clip => scheduleClipPlayback(clip, audioCtx));
-            document.getElementById('btn-play').classList.add('playing'); document.getElementById('btn-pause').classList.remove('playing'); animationLoop();
+            DOM.btnPlay.classList.add('playing');
+            DOM.btnPause.classList.remove('playing');
+            animationLoop();
         }
 
-        DOM.btnPause.onclick = pause;
         function pause() {
-            if (!state.isPlaying) return; state.isPlaying = false; state.pauseTime = audioCtx.currentTime - state.playbackStartTime;
+            if (state.isRecording) return;
+            if (!state.isPlaying) return;
+            state.isPlaying = false;
+            state.pauseTime = audioCtx.currentTime - state.playbackStartTime;
             stopAllNodes(); cancelAnimationFrame(state.animationId);
-            document.getElementById('btn-play').classList.remove('playing'); document.getElementById('btn-pause').classList.add('playing');
+            DOM.btnPlay.classList.remove('playing');
+            DOM.btnPause.classList.add('playing');
         }
+
+        function togglePause() {
+            initAudio();
+            if (state.isRecording) {
+                if (state.isRecordingPaused) {
+                    // Resume Recording
+                    state.mediaRecorder.resume();
+                    state.isRecordingPaused = false;
+                    state.totalRecordingPause += (audioCtx.currentTime - state.recordingPauseCtx);
+                    DOM.btnPause.classList.remove('playing');
+                } else {
+                    // Pause Recording
+                    state.mediaRecorder.pause();
+                    state.isRecordingPaused = true;
+                    state.recordingPauseCtx = audioCtx.currentTime;
+                    DOM.btnPause.classList.add('playing');
+                }
+            } else {
+                // Toggle Playback
+                if (state.isPlaying) {
+                    pause();
+                } else {
+                    play();
+                }
+            }
+        }
+
+        DOM.btnPlay.onclick = () => { if (!state.isRecording) play(); };
+        DOM.btnPause.onclick = togglePause;
 
         DOM.btnStop.onclick = stop;
         function stop() {
             if (state.isRecording) stopRecording();
             state.isPlaying = false; state.pauseTime = 0; stopAllNodes(); cancelAnimationFrame(state.animationId); updatePlayheadUI(0);
-            document.getElementById('btn-play').classList.remove('playing'); document.getElementById('btn-pause').classList.remove('playing');
+            DOM.btnPlay.classList.remove('playing'); DOM.btnPause.classList.remove('playing');
         }
 
-        function stopAllNodes() { state.clips.forEach(clip => { if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } clip.sourceNode.disconnect(); } if (clip.fadeGainNode) clip.fadeGainNode.disconnect(); if (clip.clipGainNode) clip.clipGainNode.disconnect(); clip.sourceNode = null; clip.fadeGainNode = null; clip.clipGainNode = null; }); }
+        function stopAllNodes() { state.clips.forEach(clip => { if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } clip.sourceNode.disconnect(); } clip.sourceNode = null; }); }
 
         function seek(time) { initAudio(); const wasPlaying = state.isPlaying; if (wasPlaying) pause(); state.pauseTime = Math.max(0, time); updatePlayheadUI(state.pauseTime); if (wasPlaying) play(); }
 
+        /* --- STREAMING_CHUNK:Scrubbing and Keybindings... --- */
         let isScrubbing = false; let wasPlayingBeforeScrub = false;
-        function scrub(e) {
-            const rect = DOM.tracksArea.getBoundingClientRect();
-            let clickX = e.clientX - rect.left;
-            state.pauseTime = Math.max(0, clickX / state.pixelsPerSecond); updatePlayheadUI(state.pauseTime);
-        }
+        function scrub(e) { const rect = DOM.tracksArea.getBoundingClientRect(); state.pauseTime = Math.max(0, (e.clientX - rect.left + DOM.timelineContainer.scrollLeft) / state.pixelsPerSecond); updatePlayheadUI(state.pauseTime); }
         function startSeek(e) { initAudio(); isScrubbing = true; wasPlayingBeforeScrub = state.isPlaying; if (state.isPlaying) pause(); scrub(e); }
 
-        DOM.ruler.onmousedown = startSeek;
-        DOM.playheadHandle.onmousedown = startSeek;
-
-        // Permettre le clic n'importe où sur tracksArea pour déplacer le curseur si on est en mode sélection et qu'on n'a pas dragué le lasso
-        DOM.tracksArea.addEventListener('mouseup', (e) => {
-            if (state.activeTool === 'select' && !lassoHasDragged && !e.target.closest('.audio-clip') && !e.target.closest('.playhead-handle') && !e.target.closest('.time-ruler')) {
+        DOM.ruler.onmousedown = startSeek; DOM.playheadHandle.onmousedown = startSeek;
+        DOM.tracksArea.addEventListener('mousedown', (e) => {
+            if (state.activeTool === 'select' && !e.target.closest('.audio-clip') && !e.target.closest('.playhead-handle') && !e.target.closest('.time-ruler')) {
                 const rect = DOM.tracksArea.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                seek(Math.max(0, clickX / state.pixelsPerSecond));
+                seek(Math.max(0, (e.clientX - rect.left + DOM.timelineContainer.scrollLeft) / state.pixelsPerSecond));
             }
         });
-
         document.addEventListener('mousemove', (e) => { if (isScrubbing) scrub(e); });
         document.addEventListener('mouseup', () => { if (isScrubbing) { isScrubbing = false; if (wasPlayingBeforeScrub) play(); } });
 
         document.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT' || document.getElementById('export-modal').style.display === 'flex') return;
 
-            if (e.code === 'Space') { e.preventDefault(); if (state.isRecording) stopRecording(); else state.isPlaying ? pause() : play(); }
+            if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+            else if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); if (state.isRecording) stopRecording(); else DOM.btnRec.click(); }
+            else if (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); togglePause(); }
+            else if (e.code === 'KeyL' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); if (!state.isRecording) play(); }
             else if (e.code === 'KeyS' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); splitClipsAtTime(state.pauseTime, e.shiftKey ? null : state.selectedTrackId); }
             else if (e.code === 'KeyC' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); setTool('cut'); }
             else if (e.code === 'KeyV' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); setTool('select'); }
@@ -1749,25 +1485,18 @@
             else if (e.code === 'ArrowRight') { e.preventDefault(); seek(state.pauseTime + 0.1); }
         });
 
+        /* --- STREAMING_CHUNK:Editing Actions (Cut, Copy, Delete)... --- */
         function splitClipAtTime(orig, cutTime) {
             if (cutTime <= orig.startTime + 0.05 || cutTime >= orig.startTime + orig.duration - 0.05) return;
             const wasPlaying = state.isPlaying; if (wasPlaying) pause();
-
             const cutOffset = cutTime - orig.startTime;
-            const newClip = { ...orig, id: 'c_' + Date.now() + Math.random().toString().slice(2, 5), startTime: cutTime, startOffset: orig.startOffset + cutOffset, duration: orig.duration - cutOffset, fadeIn: 0, autoFadeIn: 0, sourceNode: null, fadeGainNode: null, clipGainNode: null, el: null };
-
-            orig.duration = cutOffset; orig.fadeOut = 0; orig.autoFadeOut = 0;
-            if (orig.fadeIn > orig.duration) orig.fadeIn = orig.duration;
-
-            updateClipVisuals(orig); state.clips.push(newClip); renderClipDOM(newClip);
-            selectClip(orig.id, false);
-            updateCrossfades(); saveState(); if (wasPlaying) play();
+            const newClip = { ...orig, id: 'c_' + Date.now() + Math.random().toString().slice(2, 5), startTime: cutTime, startOffset: orig.startOffset + cutOffset, duration: orig.duration - cutOffset, sourceNode: null, el: null };
+            orig.duration = cutOffset; updateClipVisuals(orig); state.clips.push(newClip); renderClipDOM(newClip); selectClip(orig.id, false);
+            updateWorkspaceWidth(); saveState(); if (wasPlaying) play();
         }
-
         function splitClipsAtTime(time, targetTrackId) {
             const clipsToSplit = state.clips.filter(c => (targetTrackId === null || c.trackId === targetTrackId) && time > c.startTime + 0.05 && time < (c.startTime + c.duration - 0.05));
-            if (!clipsToSplit.length) return;
-            clipsToSplit.forEach(orig => splitClipAtTime(orig, time));
+            if (!clipsToSplit.length) return; clipsToSplit.forEach(orig => splitClipAtTime(orig, time));
         }
 
         function deleteSelected() {
@@ -1778,115 +1507,129 @@
                 const clip = state.clips[idx]; if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } clip.sourceNode.disconnect(); }
                 if (clip.el) clip.el.remove(); state.clips.splice(idx, 1);
             });
-            state.selectedClipIds = []; updateCrossfades(); saveState();
-            if (wasPlaying) play();
+            state.selectedClipIds = []; saveState(); if (wasPlaying) play();
         }
 
         function rippleDeleteSelected() {
             if (!state.selectedClipIds.length) return;
             const wasPlaying = state.isPlaying; if (wasPlaying) pause();
-            let earliestStart = Infinity;
-
-            const clipsToDelete = state.selectedClipIds.map(id => state.clips.find(c => c.id === id)).filter(Boolean);
-            clipsToDelete.sort((a, b) => b.startTime - a.startTime); // Descending
-
+            let earliestStart = Infinity; const clipsToDelete = state.selectedClipIds.map(id => state.clips.find(c => c.id === id)).filter(Boolean);
+            clipsToDelete.sort((a, b) => b.startTime - a.startTime);
             clipsToDelete.forEach(clip => {
-                earliestStart = Math.min(earliestStart, clip.startTime);
-                const trackId = clip.trackId;
-                const shiftAmount = clip.duration;
-                const shiftStart = clip.startTime;
-
+                earliestStart = Math.min(earliestStart, clip.startTime); const trackId = clip.trackId; const shiftAmount = clip.duration; const shiftStart = clip.startTime;
                 const idx = state.clips.findIndex(c => c.id === clip.id);
-                if (idx !== -1) {
-                    if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } clip.sourceNode.disconnect(); }
-                    if (clip.el) clip.el.remove();
-                    state.clips.splice(idx, 1);
-                }
-
-                state.clips.forEach(c => {
-                    if (c.trackId === trackId && c.startTime >= shiftStart) {
-                        c.startTime = Math.max(0, c.startTime - shiftAmount);
-                        updateClipVisuals(c);
-                    }
-                });
+                if (idx !== -1) { if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } clip.sourceNode.disconnect(); } if (clip.el) clip.el.remove(); state.clips.splice(idx, 1); }
+                state.clips.forEach(c => { if (c.trackId === trackId && c.startTime >= shiftStart) { c.startTime = Math.max(0, c.startTime - shiftAmount); updateClipVisuals(c); } });
             });
-
-            state.selectedClipIds = [];
-            if (earliestStart !== Infinity) { state.pauseTime = earliestStart; updatePlayheadUI(state.pauseTime); }
-            updateCrossfades(); updateWorkspaceWidth(); saveState(); if (wasPlaying) play();
+            state.selectedClipIds = []; if (earliestStart !== Infinity) { state.pauseTime = earliestStart; updatePlayheadUI(state.pauseTime); }
+            updateWorkspaceWidth(); saveState(); if (wasPlaying) play();
         }
 
         function copySelected() {
             if (!state.selectedClipIds.length) return;
             state.clipboard = state.clips.filter(c => state.selectedClipIds.includes(c.id)).map(c => ({ ...c, el: null, sourceNode: null }));
         }
-
         function pasteClips() {
-            if (!state.clipboard.length) return;
-            const wasPlaying = state.isPlaying; if (wasPlaying) pause();
-            let earliestTime = Math.min(...state.clipboard.map(c => c.startTime));
-            let maxEnd = 0; let newSelection = [];
+            if (!state.clipboard.length) return; const wasPlaying = state.isPlaying; if (wasPlaying) pause();
+            let earliestTime = Math.min(...state.clipboard.map(c => c.startTime)); let maxEnd = 0; let newSelection = [];
             state.clipboard.forEach((clip, i) => {
-                const offsetFromFirst = clip.startTime - earliestTime;
-                const newClip = { ...clip, id: 'c_paste_' + Date.now() + '_' + i, startTime: state.pauseTime + offsetFromFirst };
+                const newClip = { ...clip, id: 'c_paste_' + Date.now() + '_' + i, startTime: state.pauseTime + (clip.startTime - earliestTime) };
                 state.clips.push(newClip); renderClipDOM(newClip); newSelection.push(newClip.id);
                 if (newClip.startTime + newClip.duration > maxEnd) maxEnd = newClip.startTime + newClip.duration;
             });
-            state.selectedClipIds = newSelection;
-            document.querySelectorAll('.audio-clip').forEach(el => el.classList.toggle('selected', state.selectedClipIds.includes(el.id)));
-            state.pauseTime = maxEnd; updatePlayheadUI(state.pauseTime);
-            updateCrossfades(); updateWorkspaceWidth(); saveState();
-            if (wasPlaying) play();
+            state.selectedClipIds = newSelection; document.querySelectorAll('.audio-clip').forEach(el => el.classList.toggle('selected', state.selectedClipIds.includes(el.id)));
+            state.pauseTime = maxEnd; updatePlayheadUI(state.pauseTime); updateWorkspaceWidth(); saveState(); if (wasPlaying) play();
         }
 
+        /* --- STREAMING_CHUNK:Recording Features... --- */
+        DOM.btnRec.onclick = async () => {
+            initAudio();
+            if (state.isRecording) { stopRecording(); return; }
+            if (state.isPlaying) pause();
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("⚠️ Votre navigateur bloque l'accès au micro.\n\nSur BRAVE : Assurez-vous que le site n'est pas bloqué par les Boucliers (Shields)."); return;
+            }
+            if (!state.armedTrackId) { state.armedTrackId = state.selectedTrackId || state.tracks[0].id; renderTracksDOM(); }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                state.mediaRecorder = new MediaRecorder(stream); state.recordedChunks = [];
+                state.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) state.recordedChunks.push(e.data); };
+                state.mediaRecorder.onstop = async () => {
+                    const blob = new Blob(state.recordedChunks, { type: 'audio/webm' });
+                    const arrayBuffer = await blob.arrayBuffer();
+                    try {
+                        const audioBuffer = await decodeAudioSafe(arrayBuffer);
+                        createClip(state.armedTrackId, `REC_${state.recCount++}.WAV`, audioBuffer, state.recordingStartTimeline);
+                    } catch (e) { console.error("Decode rec error", e); }
+                    stream.getTracks().forEach(t => t.stop());
+                };
+
+                state.totalRecordingPause = 0; state.isRecordingPaused = false;
+                state.recordingStartCtx = audioCtx.currentTime; state.recordingStartTimeline = state.pauseTime;
+
+                state.isRecording = true; state.mediaRecorder.start();
+                DOM.btnRec.classList.add('rec-active');
+                DOM.btnPause.classList.remove('playing');
+
+                state.micSource = audioCtx.createMediaStreamSource(stream);
+                state.micAnalyser = audioCtx.createAnalyser(); state.micAnalyser.fftSize = 512;
+                state.micSource.connect(state.micAnalyser); state.lastDrawX = 0;
+
+                const liveEl = document.createElement('div'); liveEl.className = 'live-rec-clip'; liveEl.id = 'live-rec-el';
+                const lane = DOM.tracksArea.querySelector(`.track-lane[data-track-id="${state.armedTrackId}"]`);
+                const track = state.tracks.find(t => t.id === state.armedTrackId);
+
+                liveEl.style.height = `${track.height - 8}px`; liveEl.style.left = `${state.recordingStartTimeline * state.pixelsPerSecond}px`;
+                const liveCanvas = document.createElement('canvas'); liveCanvas.className = 'clip-waveform';
+                liveCanvas.width = 16384; liveCanvas.height = track.height - 8;
+                state.liveCanvasCtx = liveCanvas.getContext('2d'); state.liveCanvasCtx.fillStyle = 'rgba(255, 68, 68, 0.8)';
+
+                liveEl.appendChild(liveCanvas); lane.appendChild(liveEl);
+                animationLoop();
+            } catch (err) { alert("⚠️ Accès au micro refusé ou aucun micro détecté."); console.error(err); DOM.btnRec.classList.remove('rec-active'); state.isRecording = false; }
+        };
+
+        function stopRecording() {
+            if (!state.isRecording) return;
+            state.isRecording = false; state.isRecordingPaused = false; state.mediaRecorder.stop();
+            DOM.btnRec.classList.remove('rec-active'); DOM.btnPlay.classList.remove('playing'); DOM.btnPause.classList.remove('playing');
+            if (state.micSource) { state.micSource.disconnect(); state.micSource = null; }
+            if (state.micAnalyser) { state.micAnalyser.disconnect(); state.micAnalyser = null; }
+            const liveEl = document.getElementById('live-rec-el'); if (liveEl) liveEl.remove();
+        }
+
+        /* --- STREAMING_CHUNK:Animation and Rendering loops... --- */
         function animationLoop() {
             if (!state.isPlaying && !state.isRecording) return;
-
             let timeToDisplay = state.pauseTime;
-
-            if (state.isPlaying) {
-                timeToDisplay = audioCtx.currentTime - state.playbackStartTime;
-            } else if (state.isRecording) {
-                timeToDisplay = state.pauseTime + (audioCtx.currentTime - state.recordingStartTime);
+            if (state.isPlaying) { timeToDisplay = audioCtx.currentTime - state.playbackStartTime; }
+            else if (state.isRecording) {
+                if (state.isRecordingPaused) { timeToDisplay = state.pauseTime + (state.recordingPauseCtx - state.recordingStartCtx) - state.totalRecordingPause; }
+                else { timeToDisplay = state.pauseTime + (audioCtx.currentTime - state.recordingStartCtx) - state.totalRecordingPause; }
             }
-
             updatePlayheadUI(timeToDisplay);
 
             if (state.isRecording) {
-                const liveEl = document.getElementById('live-rec-el');
-                const liveWidth = (timeToDisplay - state.pauseTime) * state.pixelsPerSecond;
+                const liveEl = document.getElementById('live-rec-el'); const liveWidth = (timeToDisplay - state.pauseTime) * state.pixelsPerSecond;
                 if (liveEl) liveEl.style.width = `${liveWidth}px`;
-
-                if (state.micAnalyser && state.liveCanvasCtx) {
-                    const data = new Uint8Array(state.micAnalyser.frequencyBinCount);
-                    state.micAnalyser.getByteTimeDomainData(data);
-
-                    let min = 255, max = 0;
-                    for (let i = 0; i < data.length; i++) {
-                        if (data[i] < min) min = data[i];
-                        if (data[i] > max) max = data[i];
+                if (state.micAnalyser && state.liveCanvasCtx && !state.isRecordingPaused) {
+                    const data = new Uint8Array(state.micAnalyser.frequencyBinCount); state.micAnalyser.getByteTimeDomainData(data);
+                    let min = 255, max = 0; for (let i = 0; i < data.length; i++) { if (data[i] < min) min = data[i]; if (data[i] > max) max = data[i]; }
+                    const amp = state.liveCanvasCtx.canvas.height / 2; const normMin = (min - 128) / 128; const normMax = (max - 128) / 128;
+                    const widthToDraw = Math.max(0, liveWidth - state.lastDrawX);
+                    if (widthToDraw > 0) {
+                        state.liveCanvasCtx.fillRect(state.lastDrawX, Math.round(amp - (normMax * amp)), widthToDraw, Math.max(1, Math.round((normMax - normMin) * amp)));
+                        state.lastDrawX = liveWidth;
                     }
-
-                    const amp = state.liveCanvasCtx.canvas.height / 2;
-                    const normMin = (min - 128) / 128; const normMax = (max - 128) / 128;
-                    const drawX = liveWidth; const widthToDraw = Math.max(1, drawX - state.lastDrawX);
-                    const y = Math.round(amp - (normMax * amp)); const h = Math.max(1, Math.round((normMax - normMin) * amp));
-
-                    state.liveCanvasCtx.fillRect(state.lastDrawX, y, widthToDraw, h);
-                    state.lastDrawX = drawX;
                 }
             }
 
             const px = timeToDisplay * state.pixelsPerSecond;
-            if (px > DOM.timelineContainer.scrollLeft + DOM.timelineContainer.clientWidth - 50) {
-                DOM.timelineContainer.scrollLeft = px - DOM.timelineContainer.clientWidth + 100;
-            }
+            if (px > DOM.timelineContainer.scrollLeft + DOM.timelineContainer.clientWidth - 50) DOM.timelineContainer.scrollLeft = px - DOM.timelineContainer.clientWidth + 100;
 
-            // Auto expand during playback/recording if we approach the end of the wrapper
             const currentWrapperWidthPx = parseInt(DOM.timelineWrapper.style.width) || 0;
-            if (timeToDisplay > (currentWrapperWidthPx / state.pixelsPerSecond) - 5) {
-                updateWorkspaceWidth();
-            }
+            if (timeToDisplay > (currentWrapperWidthPx / state.pixelsPerSecond) - 5) updateWorkspaceWidth();
 
             state.animationId = requestAnimationFrame(animationLoop);
         }
@@ -1898,22 +1641,15 @@
         }
 
         function updateWorkspaceWidth() {
-            let maxTime = 60; // Forcer au minimum 60 secondes d'espace
-            state.clips.forEach(c => { if (c.startTime + c.duration > maxTime) maxTime = c.startTime + c.duration; });
+            let maxTime = 60; state.clips.forEach(c => { if (c.startTime + c.duration > maxTime) maxTime = c.startTime + c.duration; });
+            let currentTime = state.pauseTime;
+            if (state.isPlaying) currentTime = audioCtx.currentTime - state.playbackStartTime;
+            else if (state.isRecording) currentTime = state.recordingStartTimeline + (state.isRecordingPaused ? state.recordingPauseCtx : audioCtx.currentTime - state.recordingStartCtx) - state.totalRecordingPause;
 
-            // Si le curseur de lecture est plus loin que la fin du dernier clip (ex: pendant l'enregistrement)
-            let currentTime = state.isPlaying ? (audioCtx.currentTime - state.playbackStartTime) : (state.isRecording ? (state.pauseTime + (audioCtx.currentTime - state.recordingStartTime)) : state.pauseTime);
             if (currentTime > maxTime) maxTime = currentTime;
 
-            // Calcul en pixels de la largeur nécessaire
-            const viewportWidth = DOM.timelineContainer.clientWidth;
-            const neededWidthPx = Math.max(viewportWidth, (maxTime + 10) * state.pixelsPerSecond);
-
-            // On FORCE la largeur du wrapper en pixels durs.
-            // Cela oblige TOUS les enfants (règle, tracks) à s'étirer !
+            const neededWidthPx = Math.max(DOM.timelineContainer.clientWidth, (maxTime + 15) * state.pixelsPerSecond);
             DOM.timelineWrapper.style.width = `${neededWidthPx}px`;
-
-            // Redessine la règle pour l'adapter à cette nouvelle taille en pixels
             drawRuler(neededWidthPx);
         }
 
@@ -1924,8 +1660,7 @@
                 requestAnimationFrame(draw); analyser.getByteFrequencyData(data);
                 let sum = 0; let maxPeak = 0; for (let i = 0; i < data.length; i++) { sum += data[i]; if (data[i] > maxPeak) maxPeak = data[i]; }
                 const avgVol = Math.min(100, (sum / data.length / 128) * 100);
-                ctxVU.clearRect(0, 0, canvas.width, canvas.height);
-                ctxVU.fillStyle = document.documentElement.getAttribute('data-theme') === 'dark' ? '#FFFFFF' : '#000000';
+                ctxVU.clearRect(0, 0, canvas.width, canvas.height); ctxVU.fillStyle = document.documentElement.getAttribute('data-theme') === 'dark' ? '#FFFFFF' : '#000000';
                 let fillHeight = (avgVol / 100) * canvas.height;
                 if (maxPeak > 240) { fillHeight = Math.max(fillHeight, canvas.height * 0.95); ctxVU.fillStyle = 'var(--accent)'; }
                 ctxVU.fillRect(0, canvas.height - fillHeight, canvas.width, fillHeight);
@@ -1942,21 +1677,15 @@
         document.getElementById('btn-zoom-out').onclick = () => { state.pixelsPerSecond = Math.max(10, state.pixelsPerSecond / 1.3); updateAllVisuals(); };
         function updateAllVisuals() { updatePlayheadUI(state.pauseTime); state.clips.forEach(clip => { updateClipVisuals(clip); drawWaveform(clip, clip.el.querySelector('.clip-waveform'), state.tracks.find(t => t.id === clip.trackId).height); }); updateWorkspaceWidth(); }
 
-        function openExportModal() {
-            if (state.clips.length === 0) { alert("Le montage est vide !"); return; }
-            if (state.isPlaying) stop();
-            document.getElementById('export-modal').style.display = 'flex';
-            document.getElementById('export-filename').focus();
-        }
+        /* --- STREAMING_CHUNK:Export functionality... --- */
+        function openExportModal() { if (state.clips.length === 0) { alert("Le montage est vide !"); return; } if (state.isPlaying) stop(); document.getElementById('export-modal').style.display = 'flex'; document.getElementById('export-filename').focus(); }
         function closeExportModal() { document.getElementById('export-modal').style.display = 'none'; }
-
         document.getElementById('export-filename').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('btn-confirm-export').click(); else if (e.key === 'Escape') closeExportModal(); });
 
         document.getElementById('btn-confirm-export').addEventListener('click', async () => {
             closeExportModal(); const btn = document.querySelector('[onclick="openExportModal()"]'); btn.innerHTML = "EXPORTING..."; btn.disabled = true;
             let maxDur = 0; state.clips.forEach(c => { if (c.startTime + c.duration > maxDur) maxDur = c.startTime + c.duration; }); maxDur += 1;
-            const offlineCtx = new OfflineAudioContext(2, audioCtx.sampleRate * maxDur, audioCtx.sampleRate);
-            const anySolo = state.tracks.some(t => t.solo);
+            const offlineCtx = new OfflineAudioContext(2, audioCtx.sampleRate * maxDur, audioCtx.sampleRate); const anySolo = state.tracks.some(t => t.solo);
             state.tracks.forEach(t => {
                 t.offlineGainNode = offlineCtx.createGain(); let targetVol = t.volume; if (t.muted || (anySolo && !t.solo)) targetVol = 0;
                 t.offlineGainNode.gain.value = targetVol; t.offlineGainNode.connect(offlineCtx.destination);
@@ -1964,9 +1693,8 @@
             state.clips.forEach(clip => { const track = state.tracks.find(t => t.id === clip.trackId); if (track) { const orig = track.gainNode; track.gainNode = track.offlineGainNode; scheduleClipPlayback(clip, offlineCtx); track.gainNode = orig; } });
             try {
                 const renderedBuffer = await offlineCtx.startRendering(); const wavBlob = bufferToWave(renderedBuffer, renderedBuffer.length);
-                let name = document.getElementById('export-filename').value.trim() || "Montage_Podcast";
-                const a = document.createElement('a'); a.href = URL.createObjectURL(wavBlob); a.download = `${name}.wav`; a.click();
-            } catch (e) { alert("⚠️ Erreur d'exportation.\n\nSur BRAVE : La protection contre le 'Fingerprinting' bloque l'export audio. Désactivez les Boucliers (Shields) et réessayez."); }
+                const a = document.createElement('a'); a.href = URL.createObjectURL(wavBlob); a.download = `${document.getElementById('export-filename').value.trim() || "Montage_Podcast"}.wav`; a.click();
+            } catch (e) { alert("⚠️ Erreur d'exportation."); }
             btn.innerHTML = 'EXPORT MIX'; btn.disabled = false;
         });
 
@@ -1980,62 +1708,27 @@
         }
 
         let isLassoing = false; let lassoHasDragged = false; let lassoStartX = 0; let lassoStartY = 0; let initialSelectedIds = [];
-
         DOM.tracksArea.addEventListener('mousedown', (e) => {
-            if (state.activeTool !== 'select') return;
-            if (e.target.closest('.audio-clip') || e.target.closest('.playhead-handle') || e.target.closest('.time-ruler')) return;
-
-            isLassoing = true; lassoHasDragged = false; const rect = DOM.tracksArea.getBoundingClientRect();
-            lassoStartX = e.clientX - rect.left; lassoStartY = e.clientY - rect.top;
-
-            DOM.selectionBox.style.left = `${lassoStartX}px`; DOM.selectionBox.style.top = `${lassoStartY}px`;
-            DOM.selectionBox.style.width = '0px'; DOM.selectionBox.style.height = '0px'; DOM.selectionBox.style.display = 'block';
-
-            if (!e.shiftKey) { state.selectedClipIds = []; document.querySelectorAll('.audio-clip').forEach(el => el.classList.remove('selected')); initialSelectedIds = []; }
-            else { initialSelectedIds = [...state.selectedClipIds]; }
+            if (state.activeTool !== 'select') return; if (e.target.closest('.audio-clip') || e.target.closest('.playhead-handle') || e.target.closest('.time-ruler')) return;
+            isLassoing = true; lassoHasDragged = false; const rect = DOM.tracksArea.getBoundingClientRect(); lassoStartX = e.clientX - rect.left + DOM.timelineContainer.scrollLeft; lassoStartY = e.clientY - rect.top;
+            DOM.selectionBox.style.left = `${lassoStartX}px`; DOM.selectionBox.style.top = `${lassoStartY}px`; DOM.selectionBox.style.width = '0px'; DOM.selectionBox.style.height = '0px'; DOM.selectionBox.style.display = 'block';
+            if (!e.shiftKey) { state.selectedClipIds = []; document.querySelectorAll('.audio-clip').forEach(el => el.classList.remove('selected')); initialSelectedIds = []; } else { initialSelectedIds = [...state.selectedClipIds]; }
         });
-
         document.addEventListener('mousemove', (e) => {
-            if (!isLassoing) return;
-            const rect = DOM.tracksArea.getBoundingClientRect();
-            let currentX = e.clientX - rect.left; let currentY = e.clientY - rect.top;
-            let width = Math.abs(currentX - lassoStartX); let height = Math.abs(currentY - lassoStartY);
-
-            if (width > 3 || height > 3) lassoHasDragged = true;
-
-            let left = Math.min(lassoStartX, currentX); let top = Math.min(lassoStartY, currentY);
-            DOM.selectionBox.style.left = `${left}px`; DOM.selectionBox.style.top = `${top}px`;
-            DOM.selectionBox.style.width = `${width}px`; DOM.selectionBox.style.height = `${height}px`;
-
+            if (!isLassoing) return; const rect = DOM.tracksArea.getBoundingClientRect(); let currentX = e.clientX - rect.left + DOM.timelineContainer.scrollLeft; let currentY = e.clientY - rect.top;
+            let width = Math.abs(currentX - lassoStartX); let height = Math.abs(currentY - lassoStartY); if (width > 3 || height > 3) lassoHasDragged = true;
+            DOM.selectionBox.style.left = `${Math.min(lassoStartX, currentX)}px`; DOM.selectionBox.style.top = `${Math.min(lassoStartY, currentY)}px`; DOM.selectionBox.style.width = `${width}px`; DOM.selectionBox.style.height = `${height}px`;
             state.clips.forEach(clip => {
-                if (!clip.el) return;
-                const clipRect = clip.el.getBoundingClientRect(); const boxRect = DOM.selectionBox.getBoundingClientRect();
+                if (!clip.el) return; const clipRect = clip.el.getBoundingClientRect(); const boxRect = DOM.selectionBox.getBoundingClientRect();
                 const isIntersecting = !(clipRect.right < boxRect.left || clipRect.left > boxRect.right || clipRect.bottom < boxRect.top || clipRect.top > boxRect.bottom);
-
-                if (isIntersecting) {
-                    if (!state.selectedClipIds.includes(clip.id)) { state.selectedClipIds.push(clip.id); clip.el.classList.add('selected'); }
-                } else if (!initialSelectedIds.includes(clip.id)) {
-                    const idx = state.selectedClipIds.indexOf(clip.id);
-                    if (idx > -1) { state.selectedClipIds.splice(idx, 1); clip.el.classList.remove('selected'); }
-                }
+                if (isIntersecting) { if (!state.selectedClipIds.includes(clip.id)) { state.selectedClipIds.push(clip.id); clip.el.classList.add('selected'); } }
+                else if (!initialSelectedIds.includes(clip.id)) { const idx = state.selectedClipIds.indexOf(clip.id); if (idx > -1) { state.selectedClipIds.splice(idx, 1); clip.el.classList.remove('selected'); } }
             });
         });
+        document.addEventListener('mouseup', () => { if (isLassoing) { isLassoing = false; DOM.selectionBox.style.display = 'none'; } });
 
-        document.addEventListener('mouseup', (e) => {
-            if (isLassoing) {
-                isLassoing = false; DOM.selectionBox.style.display = 'none';
-            }
-        });
-
-        renderTracksDOM(); openOnboarding();
-
-        // Calcul initial de la largeur
-        updateWorkspaceWidth();
-
-        // Recalcul en cas de redimensionnement de la fenêtre
-        window.addEventListener('resize', () => {
-            updateWorkspaceWidth();
-        });
+        renderTracksDOM(); openOnboarding(); updateWorkspaceWidth();
+        window.addEventListener('resize', () => { updateWorkspaceWidth(); });
     </script>
 </body>
 
