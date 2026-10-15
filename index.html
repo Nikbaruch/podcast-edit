@@ -995,10 +995,12 @@
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon"><i class="fa-solid fa-trash-can"></i></div>
-                    <div class="slide-title">5. SUPPRESSION MAGIQUE</div>
+                    <div class="slide-title">5. SUPPRESSION & FUSION</div>
                     <div class="slide-text">Sélectionnez un raté et appuyez sur <strong>D</strong> pour
-                        l'effacer.<br>Encore plus fort : <strong>MAJ + D</strong> effacera le son et reculera
-                        automatiquement le reste pour <strong>boucher le trou</strong> !</div>
+                        l'effacer.<br><strong>MAJ + D</strong> effacera le son et reculera automatiquement le reste pour
+                        <strong>boucher le trou</strong> !<br>Sélectionnez plusieurs clips et appuyez sur
+                        <strong>F</strong> pour les <strong>fusionner</strong> en un seul bloc.
+                    </div>
                 </div>
                 <div class="onboarding-slide">
                     <div class="slide-icon" style="color: var(--accent);"><i
@@ -1118,6 +1120,7 @@
             <div><kbd>V</kbd> SELECT</div>
             <div><kbd>C</kbd> CISEAUX</div>
             <div><kbd>S</kbd> COUPER PISTE</div>
+            <div><kbd>F</kbd> FUSIONNER</div>
             <div><kbd>D</kbd> SUPPRIMER</div>
             <div><kbd>MAJ+D</kbd> SUPPR. MAGIQUE</div>
             <div><kbd>CTRL+C/V</kbd> COPIER/COLLER</div>
@@ -1831,6 +1834,7 @@
             else if (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); togglePause(); }
             else if (e.code === 'KeyL' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); if (!state.isRecording) play(); }
             else if (e.code === 'KeyS' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); splitClipsAtTime(state.pauseTime, e.shiftKey ? null : state.selectedTrackId); }
+            else if (e.code === 'KeyF' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); mergeSelectedClips(); }
             else if (e.code === 'KeyC' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); setTool('cut'); }
             else if (e.code === 'KeyV' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); setTool('select'); }
             else if (e.code === 'Delete' || e.code === 'Backspace') { e.preventDefault(); if (e.shiftKey) rippleDeleteSelected(); else deleteSelected(); }
@@ -1920,6 +1924,125 @@
             if (earliestStart !== Infinity) { state.pauseTime = Math.max(0, earliestStart); updatePlayheadUI(state.pauseTime); }
             updateWorkspaceWidth(); saveState(); showToast("SUPPRESSION MAGIQUE (TROU REBOUCHÉ)");
             if (wasPlaying) play();
+        }
+
+        function mergeSelectedClips() {
+            if (state.isRecording) return;
+            if (state.selectedClipIds.length < 2) {
+                showToast("SÉLECTIONNEZ AU MOINS 2 CLIPS POUR LES FUSIONNER (F)");
+                return;
+            }
+            initAudio();
+            const wasPlaying = state.isPlaying;
+            if (wasPlaying) pause();
+
+            // Regrouper les clips sélectionnés par piste pour fusionner piste par piste
+            const selectedClips = state.clips.filter(c => state.selectedClipIds.includes(c.id));
+            const clipsByTrack = {};
+            selectedClips.forEach(c => {
+                if (!clipsByTrack[c.trackId]) clipsByTrack[c.trackId] = [];
+                clipsByTrack[c.trackId].push(c);
+            });
+
+            const targetTracks = Object.keys(clipsByTrack).filter(tId => clipsByTrack[tId].length >= 2);
+            let newMergedIds = [];
+
+            if (targetTracks.length > 0) {
+                // Cas standard : au moins 2 clips sont sur la même piste
+                targetTracks.forEach(trackId => {
+                    const mergedClip = performClipMerge(clipsByTrack[trackId], trackId);
+                    if (mergedClip) newMergedIds.push(mergedClip.id);
+                });
+            } else {
+                // Si l'utilisateur a sélectionné des clips sur des pistes différentes, on les fusionne sur la piste du premier clip
+                selectedClips.sort((a, b) => a.startTime - b.startTime);
+                const mergedClip = performClipMerge(selectedClips, selectedClips[0].trackId);
+                if (mergedClip) newMergedIds.push(mergedClip.id);
+            }
+
+            if (newMergedIds.length > 0) {
+                state.selectedClipIds = newMergedIds;
+                document.querySelectorAll('.audio-clip').forEach(el => el.classList.toggle('selected', state.selectedClipIds.includes(el.id)));
+                updateWorkspaceWidth();
+                saveState();
+                showToast("CLIPS FUSIONNÉS (CTRL+Z POUR ANNULER)");
+            }
+            if (wasPlaying) play();
+        }
+
+        function performClipMerge(clipsToMerge, targetTrackId) {
+            clipsToMerge.sort((a, b) => a.startTime - b.startTime);
+            const minStart = Math.min(...clipsToMerge.map(c => c.startTime));
+            const maxEnd = Math.max(...clipsToMerge.map(c => c.startTime + c.duration));
+            const totalDuration = Math.max(0.05, maxEnd - minStart);
+
+            const sampleRate = audioCtx ? audioCtx.sampleRate : clipsToMerge[0].buffer.sampleRate;
+            const maxChannels = Math.max(...clipsToMerge.map(c => c.buffer.numberOfChannels));
+            const totalSamples = Math.max(1, Math.ceil(totalDuration * sampleRate));
+            const mergedBuffer = audioCtx.createBuffer(maxChannels, totalSamples, sampleRate);
+
+            for (let ch = 0; ch < maxChannels; ch++) {
+                const outData = mergedBuffer.getChannelData(ch);
+                clipsToMerge.forEach(clip => {
+                    const srcChan = Math.min(ch, clip.buffer.numberOfChannels - 1);
+                    const inData = clip.buffer.getChannelData(srcChan);
+                    const clipSampleRate = clip.buffer.sampleRate;
+                    const ratio = clipSampleRate / sampleRate;
+
+                    const destStartSample = Math.max(0, Math.round((clip.startTime - minStart) * sampleRate));
+                    const clipLengthSamples = Math.round(clip.duration * sampleRate);
+                    const srcOffsetSamples = clip.startOffset * clipSampleRate;
+                    const gainVal = clip.gain !== undefined ? clip.gain : 1.0;
+                    const fadeInSamples = Math.round((clip.fadeIn || 0) * sampleRate);
+                    const fadeOutSamples = Math.round((clip.fadeOut || 0) * sampleRate);
+
+                    for (let i = 0; i < clipLengthSamples; i++) {
+                        const destIdx = destStartSample + i;
+                        if (destIdx >= totalSamples) break;
+                        const srcIdx = Math.floor(srcOffsetSamples + i * ratio);
+                        if (srcIdx < 0 || srcIdx >= inData.length) continue;
+
+                        let env = 1.0;
+                        if (fadeInSamples > 0 && i < fadeInSamples) {
+                            env *= (i / fadeInSamples);
+                        }
+                        if (fadeOutSamples > 0 && i >= (clipLengthSamples - fadeOutSamples)) {
+                            env *= Math.max(0, (clipLengthSamples - i) / fadeOutSamples);
+                        }
+
+                        outData[destIdx] = Math.max(-1, Math.min(1, outData[destIdx] + inData[srcIdx] * gainVal * env));
+                    }
+                });
+            }
+
+            // Supprimer les anciens clips fusionnés
+            clipsToMerge.forEach(clip => {
+                const idx = state.clips.findIndex(c => c.id === clip.id);
+                if (idx !== -1) {
+                    if (clip.sourceNode) { try { clip.sourceNode.stop(); } catch (e) { } clip.sourceNode.disconnect(); }
+                    if (clip.el) clip.el.remove();
+                    state.clips.splice(idx, 1);
+                }
+            });
+
+            const baseName = clipsToMerge[0].name.replace(/\s*\(FUSION\)$/i, '');
+            const newClip = {
+                id: 'c_merge_' + Date.now() + Math.random().toString().slice(2, 5),
+                trackId: targetTrackId,
+                name: `${baseName} (FUSION)`,
+                buffer: mergedBuffer,
+                startTime: minStart,
+                startOffset: 0,
+                duration: mergedBuffer.duration,
+                fadeIn: 0,
+                fadeOut: 0,
+                gain: 1.0,
+                sourceNode: null, fadeGainNode: null, clipGainNode: null, el: null
+            };
+
+            state.clips.push(newClip);
+            renderClipDOM(newClip);
+            return newClip;
         }
 
         function copySelected() {
